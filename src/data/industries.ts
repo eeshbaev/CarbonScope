@@ -1,0 +1,42 @@
+/** Industry keys — labels and recommendations live in i18n. */
+export const INDUSTRY_KEYS = [
+  'manufacturing',
+  'chemical',
+  'banking',
+  'insurance',
+  'mining',
+  'oil_gas',
+  'technology',
+  'telecommunications',
+  'financial_services',
+  'agriculture',
+  'healthcare',
+  'energy',
+  'agriculture_food',
+  'food_beverage',
+  'retail',
+  'construction',
+  'logistics',
+  'media',
+  'education',
+  'hospitality',
+  'government',
+  'professional_services',
+  'ngo',
+  'consulting',
+  'textile',
+  'automotive',
+  'aviation',
+  'maritime',
+  'pharmaceuticals',
+  'cement',
+  'steel',
+  'ecommerce',
+  'utilities',
+  'defense',
+  'other',
+] as const;
+
+export type IndustryKey = (typeof INDUSTRY_KEYS)[number];
+
+export const DEFAULT_INDUSTRY: IndustryKey = 'other';

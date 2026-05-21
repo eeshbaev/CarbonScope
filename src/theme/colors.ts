@@ -1,0 +1,16 @@
+export const colors = {
+  background: '#F6FAF7',
+  text: '#1A2E24',
+  textSecondary: '#5A6D63',
+  primary: '#25694F',
+  primaryLight: '#3A8F6E',
+  primaryMuted: '#E2F3E9',
+  border: '#D8E5DC',
+  card: '#FFFFFF',
+  scope1: '#E07A3A',
+  scope2: '#D4A017',
+  chartOrange: '#E07A3A',
+  chartYellow: '#D4A017',
+  danger: '#B42318',
+  white: '#FFFFFF',
+};
