@@ -1,6 +1,6 @@
 import { computeAssessmentEmissions, formatEmissions, type EmissionsBreakdown } from '../calculations';
 import type { EmissionCategoryKey } from '../data/categoryEmblems';
-import { USD_PER_UNIT } from '../data/currencies';
+import { USD_DEFLATOR_TO_2022, usdPerUnit } from '../data/currencies';
 import {
   FUEL_FACTORS,
   FUEL_FACTOR_DATASET,
@@ -85,7 +85,7 @@ export function buildInputRows(
       key: f.key,
       category: f.key,
       label: t.scope3.fields[f.key],
-      value: `${formatAppNumber(qty, locale)} ${f.unit === 'currency' ? spendCurrency : t.scope3.units[f.unit]}`,
+      value: `${formatAppNumber(qty, locale)} ${f.unit === 'currency' ? (spendCurrency === 'OTHER' ? t.scope3.otherCurrency : spendCurrency) : t.scope3.units[f.unit]}`,
     });
   }
   return rows;
@@ -98,7 +98,11 @@ export function buildGasRows(
   t: TranslationKeys,
   tco2eLabel: string
 ): ReportRow[] {
-  const gases = assessment.scope1ByGas ?? breakdown.scope1ByGas;
+  // Reports saved before the split was recorded show a recalculate note instead of rows
+  // recomputed with today's factors, which would not add up to the stored Scope 1 total.
+  if (!assessment.scope1ByGas) return [];
+  void breakdown;
+  const gases = assessment.scope1ByGas;
   return (['co2', 'ch4', 'n2o', 'hfc'] as const)
     .filter((g) => gases[g] > 0 || g === 'co2')
     .map((g) => ({
@@ -194,8 +198,15 @@ export function buildMethodologyRows(
       key: 'spend',
       label: r.pdfSpendConversion,
       value: r.spendConversion
-        .replace('{currency}', breakdown.spendCurrency)
-        .replace('{rate}', String(USD_PER_UNIT[breakdown.spendCurrency])),
+        .replace(
+          '{currency}',
+          breakdown.spendCurrency === 'OTHER' ? t.scope3.otherCurrency : breakdown.spendCurrency
+        )
+        .replace(
+          '{rate}',
+          String(usdPerUnit(breakdown.spendCurrency, assessment.scope3.customUsdRate) ?? '—')
+        )
+        .replace('{deflator}', USD_DEFLATOR_TO_2022.toFixed(4)),
     });
   }
   if (assessment.scope3.includeFuelEnergyUpstream) {

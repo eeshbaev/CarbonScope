@@ -39,9 +39,6 @@ export const UI_PATCHES: Record<string, DeepPartial<TranslationKeys>> = {
       naturalGas: 'Природный газ',
       preview: 'Предпросмотр Scope 1',
       continueScope2: 'Перейти к Scope 2',
-      factorDiesel: '2,68 кг CO₂э/л',
-      factorPetrol: '2,31 кг CO₂э/л',
-      factorGas: '0,183 кг CO₂э/кВт·ч',
     },
     scope2: {
       title: 'Scope 2 — Косвенные выбросы',

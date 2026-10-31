@@ -159,6 +159,8 @@ export function supportsMonthlyEntry(period: '6_months' | '1_year'): boolean {
 export type Scope3Inputs = Record<Scope3FieldKey, number> & {
   /** Currency of spend-based lines (defaults from the company country). */
   currency?: CurrencyCode;
+  /** USD per 1 unit of currency, used when currency is 'OTHER'. */
+  customUsdRate?: number | null;
   /** Add the automatic Category 3 estimate derived from Scope 1 & 2 inputs. */
   includeFuelEnergyUpstream: boolean;
 };
@@ -177,6 +179,7 @@ export function migrateScope3Inputs(raw: unknown): Scope3Inputs {
   for (const f of SCOPE3_FIELDS) out[f.key] = positive(src[f.key]);
   out.includeFuelEnergyUpstream = src.includeFuelEnergyUpstream === true;
   if (isCurrencyCode(src.currency)) out.currency = src.currency;
+  out.customUsdRate = optionalFactor(src.customUsdRate);
   return out;
 }
 

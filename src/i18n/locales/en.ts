@@ -315,9 +315,6 @@ export const en = {
     naturalGas: 'Natural Gas',
     preview: 'Scope 1 preview',
     continueScope2: 'Continue to Scope 2',
-    factorDiesel: '2.68 kg CO₂e/liter',
-    factorPetrol: '2.31 kg CO₂e/liter',
-    factorGas: '0.183 kg CO₂e/kWh',
     lpg: 'LPG (propane / butane)',
     heatingOil: 'Heating oil / kerosene',
     coal: 'Coal',
@@ -337,10 +334,10 @@ export const en = {
       'Litres of heating oil, kerosene or gas oil burned in boilers, heaters or generators, from delivery notes.',
     coal: 'Kilograms or tonnes of coal burned on site, from delivery tickets or weighbridge records.',
     evKm:
-      'Kilometres driven by company-owned electric vehicles that were charged away from your own meters (public chargers, employees’ homes). Charging on your site is already in your electricity bill. Converted at 0.18 kWh/km.',
+      'Kilometres driven by company-owned electric vehicles that were charged away from your own meters (public chargers, employees’ homes). Charging on your site is already in your electricity bill. Converted at 0.205 kWh/km.',
     districtHeat:
-      'kWh of heat delivered by a district heating network, from the heat meter or supplier invoice. Default factor 0.179 kg CO₂e/kWh — use the market-based section below for your supplier’s own factor.',
-    steam: 'kWh of purchased steam (convert from tonnes using your supplier’s energy content). Default factor 0.179 kg CO₂e/kWh.',
+      'kWh of heat delivered by a district heating network, from the heat meter or supplier invoice. Default factor 0.175 kg CO₂e/kWh (UK average) — use the market-based section below for your supplier’s own factor.',
+    steam: 'kWh of purchased steam (convert from tonnes using your supplier’s energy content). Default factor 0.175 kg CO₂e/kWh (UK average).',
     districtCooling:
       'kWh of chilled water / cooling delivered by a district cooling network. Estimated as electric chillers: grid factor ÷ 4.',
   },
@@ -407,7 +404,6 @@ export const en = {
       spendServices: 'Professional, IT & software services',
       spendFoodCatering: 'Food & catering',
       spendConstruction: 'Building materials & construction work',
-      spendOtherGoods: 'Other purchased goods',
       freightRoadTkm: 'Road freight (trucks)',
       freightRailTkm: 'Rail freight',
       freightSeaTkm: 'Sea freight (container ship)',
@@ -418,7 +414,8 @@ export const en = {
       carKm: 'Car travel (rental, taxi, private car claims)',
       hotelNights: 'Hotel stays',
       commuteCarKm: 'Commuting by car',
-      commutePublicTransportKm: 'Commuting by bus / metro / train',
+      commutePublicTransportKm: 'Commuting by bus',
+      commuteRailKm: 'Commuting by train / metro',
       wasteLandfillTonnes: 'Waste to landfill',
       wasteRecycledTonnes: 'Waste recycled',
       waterM3: 'Water supply & wastewater',
@@ -435,7 +432,12 @@ export const en = {
     currencyLabel: 'Currency for spend',
     spendTitle: 'Spend-based (where you have no activity data)',
     spendHint:
-      'Annual spend excluding VAT / sales tax. Spend-based factors are sector averages (US EPA, 2022 USD) — use activity data where you have it. Converted at 2024 average exchange rates.',
+      'Annual spend excluding VAT / sales tax. Spend-based factors are US sector averages (US EPA v1.3, 2022 dollars) — use activity data where you have it. Converted at 2025 average exchange rates and adjusted for US inflation since 2022.',
+    otherCurrency: 'Other currency (enter rate)',
+    customRate: 'Exchange rate',
+    customRateUnit: 'USD per 1 unit',
+    customRateHint: 'How many US dollars one unit of your currency was worth on average during the reporting period.',
+    missingRateWarning: 'Enter an exchange rate — spend lines are not counted until you do.',
     spendFactorLine: '{factor} kg CO₂e per USD',
     freightHint:
       'tonne-km = weight shipped (tonnes) × distance (km). Include freight you pay for that is run by other companies.',
@@ -632,12 +634,12 @@ export const en = {
     marketHeat: 'heat/steam supplier factor {factor} kg CO₂e/kWh',
     pdfRefrigerants: 'Refrigerant GWPs applied',
     pdfSpendConversion: 'Spend-based conversion',
-    spendConversion: '1 {currency} = {rate} USD (2024 average); factors in 2022 USD',
+    spendConversion: '1 {currency} = {rate} USD (2025 average), × {deflator} to 2022 dollars (US CPI-U)',
     pdfCat3Basis: 'Category 3 estimate',
     cat3Basis:
-      'Well-to-tank fuel factors; electricity grid losses and upstream generation at 30% of the grid factor; heat/steam 0.04 kg CO₂e/kWh.',
+      'DESNZ well-to-tank fuel factors; grid losses and upstream generation at 40.8% of the grid factor (DESNZ UK ratio); heat/steam 0.0446 kg CO₂e/kWh.',
     legacyFactorsNote:
-      'Calculated before fuel factor dataset 2026.2 — recalculate to add the gas split.',
+      'Calculated before the gas split was recorded — recalculate to see Scope 1 by gas.',
     scope3Breakdown: 'Scope 3 by category',
     comparisonLabels: {
       total: 'Total',

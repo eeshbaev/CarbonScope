@@ -5,9 +5,6 @@ import type { TranslationKeys } from '../locales/en';
 export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> = {
   ru: {
     scope1: {
-      factorDiesel: '2,68 кг CO₂э/л',
-      factorPetrol: '2,31 кг CO₂э/л',
-      factorGas: '0,183 кг CO₂э/кВт·ч',
     },
     scopeInputs: {
       monthlyBreakdown: 'Помесячно',
@@ -42,9 +39,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   fr: {
     scope1: {
-      factorDiesel: '2,68 kg CO₂e/litre',
-      factorPetrol: '2,31 kg CO₂e/litre',
-      factorGas: '0,183 kg CO₂e/kWh',
     },
     scopeInputs: {
       monthlyBreakdown: 'Mensuel',
@@ -80,9 +74,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   de: {
     scope1: {
-      factorDiesel: '2,68 kg CO₂e/Liter',
-      factorPetrol: '2,31 kg CO₂e/Liter',
-      factorGas: '0,183 kg CO₂e/kWh',
     },
     scopeInputs: {
       monthlyBreakdown: 'Monatlich',
@@ -118,9 +109,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   es: {
     scope1: {
-      factorDiesel: '2,68 kg CO₂e/litro',
-      factorPetrol: '2,31 kg CO₂e/litro',
-      factorGas: '0,183 kg CO₂e/kWh',
     },
     scopeInputs: {
       monthlyBreakdown: 'Mensual',
@@ -156,9 +144,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   pt: {
     scope1: {
-      factorDiesel: '2,68 kg CO₂e/litro',
-      factorPetrol: '2,31 kg CO₂e/litro',
-      factorGas: '0,183 kg CO₂e/kWh',
     },
     scopeInputs: {
       monthlyBreakdown: 'Mensal',
@@ -194,9 +179,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   it: {
     scope1: {
-      factorDiesel: '2,68 kg CO₂e/litro',
-      factorPetrol: '2,31 kg CO₂e/litro',
-      factorGas: '0,183 kg CO₂e/kWh',
     },
     scopeInputs: {
       monthlyBreakdown: 'Mensile',
@@ -232,9 +214,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   ja: {
     scope1: {
-      factorDiesel: '2.68 kg CO₂e/リットル',
-      factorPetrol: '2.31 kg CO₂e/リットル',
-      factorGas: '0.183 kg CO₂e/kWh',
     },
     scopeInputs: {
       monthlyBreakdown: '月別入力',
@@ -270,9 +249,6 @@ export const SCOPE_INPUT_PATCHES: Record<string, DeepPartial<TranslationKeys>> =
   },
   zh: {
     scope1: {
-      factorDiesel: '2.68 kg CO₂e/升',
-      factorPetrol: '2.31 kg CO₂e/升',
-      factorGas: '0.183 kg CO₂e/千瓦时',
     },
     scopeInputs: {
       monthlyBreakdown: '按月填写',

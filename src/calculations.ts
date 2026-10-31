@@ -1,4 +1,4 @@
-import { currencyForCountry, toUsd, type CurrencyCode } from './data/currencies';
+import { currencyForCountry, toUsd2022, type CurrencyCode } from './data/currencies';
 import { getElectricityFactorForCountry } from './data/emissionFactors';
 import {
   FUEL_FACTOR_DATASET,
@@ -146,7 +146,8 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
   };
   for (const f of SCOPE3_FIELDS) {
     const qty = scope3[f.key] ?? 0;
-    const base = f.unit === 'currency' ? toUsd(qty, spendCurrency) : qty;
+    const base =
+      f.unit === 'currency' ? toUsd2022(qty, spendCurrency, scope3.customUsdRate) : qty;
     const t = (base * f.factor) / 1000;
     scope3ByField[f.key] = t;
     scope3ByCategory[f.category] += t;

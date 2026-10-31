@@ -10,10 +10,11 @@ import { ScreenLayout } from '../components/ScreenLayout';
 import { computeEmissions, formatEmissions } from '../calculations';
 import { useAssessment } from '../context/AssessmentContext';
 import { useLanguage } from '../context/LanguageContext';
-import { CURRENCY_CODES, type CurrencyCode } from '../data/currencies';
+import { CURRENCY_CODES, usdPerUnit, type CurrencyCode } from '../data/currencies';
 import {
   SCOPE3_CATEGORIES,
   SCOPE3_CATEGORY_NUMBER,
+  SCOPE3_FIELDS,
   getScope3FieldsForCategory,
   type Scope3CategoryKey,
   type Scope3FieldDef,
@@ -52,8 +53,13 @@ export function Scope3Screen({ navigation }: Props) {
   const setScope3 = (patch: Partial<Scope3Inputs>) =>
     updateDraft({ scope3: { ...draft.scope3, ...patch } });
 
+  const hasSpend = SCOPE3_FIELDS.some((f) => f.unit === 'currency' && (draft.scope3[f.key] ?? 0) > 0);
+  const missingRate =
+    currency === 'OTHER' && hasSpend && usdPerUnit('OTHER', draft.scope3.customUsdRate) == null;
+  const currencyLabel = currency === 'OTHER' ? t.scope3.otherCurrency : currency;
+
   const unitFor = (def: Scope3FieldDef) =>
-    def.unit === 'currency' ? currency : t.scope3.units[def.unit];
+    def.unit === 'currency' ? currencyLabel : t.scope3.units[def.unit];
 
   const factorHint = (def: Scope3FieldDef) =>
     def.unit === 'currency'
@@ -104,8 +110,22 @@ export function Scope3Screen({ navigation }: Props) {
             label={t.scope3.currencyLabel}
             value={currency}
             onValueChange={(v) => setScope3({ currency: v as CurrencyCode })}
-            items={CURRENCY_CODES.map((c) => ({ label: c, value: c }))}
+            items={CURRENCY_CODES.map((c) => ({
+              label: c === 'OTHER' ? t.scope3.otherCurrency : c,
+              value: c,
+            }))}
           />
+          {currency === 'OTHER' ? (
+            <NumberField
+              label={t.scope3.customRate}
+              value={draft.scope3.customUsdRate ?? null}
+              nullable
+              unit={t.scope3.customRateUnit}
+              hint={t.scope3.customRateHint}
+              onChange={(v) => setScope3({ customUsdRate: v })}
+            />
+          ) : null}
+          {missingRate ? <Text style={styles.warning}>{t.scope3.missingRateWarning}</Text> : null}
           {renderFields(spend)}
           {renderFields(other)}
         </>
@@ -209,6 +229,12 @@ function createStyles({ typography, spacing, fontScale }: ThemeSlice) {
       ...typography.caption,
       color: colors.textSecondary,
       marginTop: spacing.xs,
+      marginBottom: spacing.sm,
+    },
+    warning: {
+      ...typography.caption,
+      color: colors.danger,
+      fontWeight: '600',
       marginBottom: spacing.sm,
     },
     toggleRow: {

@@ -1,15 +1,16 @@
 /**
- * Scope 3 (value-chain) emission factors.
+ * Scope 3 (value-chain) emission factors. See docs/FACTOR_SOURCES.md for provenance and checks.
  *
- * Activity-based lines: kg CO₂e per unit, indicative averages based on the UK DESNZ/DEFRA
- * GHG conversion factors (2024 set), excluding radiative forcing.
- * Spend-based lines: kg CO₂e per USD (2022 USD, purchaser price), rounded indicative values
- * based on US EPA USEEIO v1.2 supply-chain factors. Spend in other currencies is converted with
- * the rates in currencies.ts; inflation since 2022 is not adjusted.
+ * Activity-based lines: kg CO₂e per unit from the UK Government (DESNZ) GHG conversion factors
+ * 2026 flat file. Air travel and air freight include radiative forcing ("with RF"), as DESNZ
+ * recommends, to capture non-CO₂ warming from aviation.
+ *
+ * Spend-based lines: kg CO₂e per 2022 USD (purchaser price, with margins) from US EPA Supply Chain
+ * GHG Emission Factors v1.3 by NAICS-6. Spend is converted to USD at 2025 average exchange rates
+ * and deflated to 2022 dollars with US CPI-U (see currencies.ts).
+ *
  * Category 3 (fuel- and energy-related activities) has no inputs — it is derived from the
  * Scope 1 and Scope 2 data (see fuelFactors.ts).
- *
- * Values are intended for SME screening inventories; verify before regulated disclosure.
  */
 
 /** GHG Protocol Scope 3 categories supported by the calculator. */
@@ -27,7 +28,6 @@ export type Scope3FieldKey =
   | 'spendServices'
   | 'spendFoodCatering'
   | 'spendConstruction'
-  | 'spendOtherGoods'
   | 'waterM3'
   | 'freightRoadTkm'
   | 'freightRailTkm'
@@ -41,7 +41,8 @@ export type Scope3FieldKey =
   | 'carKm'
   | 'hotelNights'
   | 'commuteCarKm'
-  | 'commutePublicTransportKm';
+  | 'commutePublicTransportKm'
+  | 'commuteRailKm';
 
 export type Scope3Unit =
   | 'm3'
@@ -61,7 +62,7 @@ export interface Scope3FieldDef {
   emblem: string;
 }
 
-export const SCOPE3_ACTIVITY_DATASET_VERSION = '2026.2';
+export const SCOPE3_ACTIVITY_DATASET_VERSION = '2026.3';
 
 /** GHG Protocol category number (1–15) for display. */
 export const SCOPE3_CATEGORY_NUMBER: Record<Scope3CategoryKey, number> = {
@@ -83,41 +84,61 @@ export const SCOPE3_CATEGORIES: Scope3CategoryKey[] = [
 ];
 
 export const SCOPE3_FIELDS: Scope3FieldDef[] = [
-  // Category 1 — Purchased goods & services (spend-based + water)
-  { key: 'spendOfficeSupplies', category: 'cat1Purchased', unit: 'currency', factor: 0.35, emblem: '📎' },
-  { key: 'spendItHardware', category: 'cat1Purchased', unit: 'currency', factor: 0.2, emblem: '💻' },
-  { key: 'spendServices', category: 'cat1Purchased', unit: 'currency', factor: 0.1, emblem: '💼' },
-  { key: 'spendFoodCatering', category: 'cat1Purchased', unit: 'currency', factor: 0.55, emblem: '🍽️' },
-  { key: 'spendConstruction', category: 'cat1Purchased', unit: 'currency', factor: 0.45, emblem: '🧱' },
-  { key: 'spendOtherGoods', category: 'cat1Purchased', unit: 'currency', factor: 0.35, emblem: '📦' },
-  { key: 'waterM3', category: 'cat1Purchased', unit: 'm3', factor: 0.45, emblem: '💧' },
-  // Category 4 — Upstream transportation & distribution (paid-for inbound freight)
-  { key: 'freightRoadTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.107, emblem: '🚚' },
-  { key: 'freightRailTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.028, emblem: '🚂' },
-  { key: 'freightSeaTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.016, emblem: '🚢' },
-  { key: 'freightAirTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.6, emblem: '🛩️' },
-  // Category 5 — Waste generated in operations
-  { key: 'wasteLandfillTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 500, emblem: '🗑️' },
-  { key: 'wasteRecycledTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 21, emblem: '♻️' },
+  // Category 1 — Purchased goods & services. Spend: EPA v1.3, kg CO₂e per 2022 USD with margins.
+  // NAICS 322230 Stationery product manufacturing
+  { key: 'spendOfficeSupplies', category: 'cat1Purchased', unit: 'currency', factor: 0.296, emblem: '📎' },
+  // NAICS 334111 Electronic computer manufacturing
+  { key: 'spendItHardware', category: 'cat1Purchased', unit: 'currency', factor: 0.058, emblem: '💻' },
+  // Mean of NAICS 541110 Lawyers (0.041), 541512 Computer systems design (0.089),
+  // 541611 Management consulting (0.078)
+  { key: 'spendServices', category: 'cat1Purchased', unit: 'currency', factor: 0.069, emblem: '💼' },
+  // NAICS 722310 Food service contractors
+  { key: 'spendFoodCatering', category: 'cat1Purchased', unit: 'currency', factor: 0.132, emblem: '🍽️' },
+  // NAICS 236220 Commercial and institutional building construction
+  { key: 'spendConstruction', category: 'cat1Purchased', unit: 'currency', factor: 0.224, emblem: '🧱' },
+  // DESNZ Water supply 0.1913 + Water treatment 0.17088 (assumes water used is returned to sewer)
+  { key: 'waterM3', category: 'cat1Purchased', unit: 'm3', factor: 0.36218, emblem: '💧' },
+  // Category 4 — Upstream transportation & distribution (DESNZ Freighting goods)
+  // HGV (all diesel), average non-refrigerated HGV, average laden
+  { key: 'freightRoadTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.10356, emblem: '🚚' },
+  // Rail › Freight train
+  { key: 'freightRailTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.02583, emblem: '🚂' },
+  // Cargo ship › Container ship › Average
+  { key: 'freightSeaTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.01612, emblem: '🚢' },
+  // Freight flights › Long-haul, to/from UK › With RF
+  { key: 'freightAirTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.89939, emblem: '🛩️' },
+  // Category 5 — Waste generated in operations (DESNZ Waste disposal › Commercial and industrial waste)
+  { key: 'wasteLandfillTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 520.58023, emblem: '🗑️' },
+  // Closed-loop recycling
+  { key: 'wasteRecycledTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 4.65358, emblem: '♻️' },
   // Category 6 — Business travel
-  { key: 'flightShortHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.154, emblem: '✈️' },
-  { key: 'flightLongHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.193, emblem: '🌍' },
-  { key: 'railKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.035, emblem: '🚆' },
-  { key: 'carKm', category: 'cat6Travel', unit: 'km', factor: 0.17, emblem: '🚙' },
+  // Flights › Short-haul, to/from UK › Average passenger › With RF
+  { key: 'flightShortHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.12786, emblem: '✈️' },
+  // Flights › Long-haul, to/from UK › Average passenger › With RF
+  { key: 'flightLongHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.15282, emblem: '🌍' },
+  // Rail › National rail
+  { key: 'railKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.03092, emblem: '🚆' },
+  // Passenger vehicles › Cars (by size) › Average car › Unknown fuel
+  { key: 'carKm', category: 'cat6Travel', unit: 'km', factor: 0.16591, emblem: '🚙' },
+  // Hotel stay › UK › room per night
   { key: 'hotelNights', category: 'cat6Travel', unit: 'roomNights', factor: 10.4, emblem: '🏨' },
   // Category 7 — Employee commuting
-  { key: 'commuteCarKm', category: 'cat7Commuting', unit: 'km', factor: 0.17, emblem: '🚘' },
+  // Average car › Unknown fuel
+  { key: 'commuteCarKm', category: 'cat7Commuting', unit: 'km', factor: 0.16591, emblem: '🚘' },
+  // Bus › Average local bus
   {
     key: 'commutePublicTransportKm',
     category: 'cat7Commuting',
     unit: 'passengerKm',
-    factor: 0.08,
+    factor: 0.10151,
     emblem: '🚌',
   },
+  // Rail › National rail
+  { key: 'commuteRailKm', category: 'cat7Commuting', unit: 'passengerKm', factor: 0.03092, emblem: '🚇' },
 ];
 
 export const SCOPE3_FACTOR_SOURCES =
-  'DESNZ/DEFRA GHG conversion factors 2024 (activity, excl. radiative forcing) · US EPA USEEIO v1.2 (spend, 2022 USD)';
+  'UK Government (DESNZ) GHG conversion factors 2026 (activity; air with radiative forcing) · US EPA Supply Chain GHG Emission Factors v1.3 (spend, 2022 USD)';
 
 export function getScope3Field(key: Scope3FieldKey): Scope3FieldDef {
   const def = SCOPE3_FIELDS.find((f) => f.key === key);
