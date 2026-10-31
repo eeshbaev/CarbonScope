@@ -1,4 +1,4 @@
-import * as Notifications from 'expo-notifications';
+import { Notifications } from './expoNotifications';
 import { Platform } from 'react-native';
 import type { Locale } from '../i18n';
 import { loadAssessments } from '../storage';

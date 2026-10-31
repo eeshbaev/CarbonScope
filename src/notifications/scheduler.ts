@@ -1,4 +1,4 @@
-import * as Notifications from 'expo-notifications';
+import { Notifications } from './expoNotifications';
 import { CATEGORY_LINES, getLineInput } from '../data/inputLines';
 import { lineLabel } from '../utils/lineLabels';
 import { Platform } from 'react-native';
