@@ -66,6 +66,16 @@ export const en = {
     fuelFactorsVersion: 'Dataset {version} · reference year {year} · {gwp}',
     fuelFactorsSplit: 'CO₂ {co2} + CH₄ {ch4} + N₂O {n2o}',
     gridFactorsTitle: 'Grid electricity by country (Scope 2, location-based)',
+    recalcAllTitle: 'Update reports to the latest factors',
+    recalcAllHint:
+      'Recalculates saved reports with the current factor datasets ({version}) so comparisons and targets use one methodology. Each finalized report keeps a note of its previous result.',
+    recalcAllOutdated: '{count} reports use older factors.',
+    recalcAllNone: 'All reports use the latest factors.',
+    recalcAllButton: 'Recalculate all reports',
+    recalcAllConfirmTitle: 'Recalculate all reports?',
+    recalcAllConfirmMessage:
+      '{count} reports will be recalculated with the latest emission factors. Activity data is not changed, and each finalized report keeps its previous result as a restatement note.',
+    recalcAllDone: '{count} reports recalculated.',
     editFactor: 'Edit',
     resetFactor: 'Reset to default',
     factorEditTitle: 'Grid factor for {country}',
@@ -616,6 +626,11 @@ export const en = {
     scope2Indirect: 'SCOPE 2 — INDIRECT',
     scope3ValueChain: 'SCOPE 3 — VALUE CHAIN',
     scope2MarketLine: 'Market-based: {value}',
+    restatementTitle: 'Recalculated with updated factors',
+    restatementBody:
+      'Previously {previous} {unit} ({stamp}). Now {current} {unit}: {factor} from updated emission factors and {activity} from changed activity data.',
+    mixedFactorsNote:
+      'These reports use different emission factor datasets. Recalculate all reports in Settings → Emission factors for a like-for-like comparison.',
     scope2DualTitle: 'Scope 2 — dual reporting',
     scope2DualBody:
       'Totals use location-based Scope 2 ({location} {unit}). Market-based Scope 2, reflecting your contracts and certificates: {market} {unit}.',

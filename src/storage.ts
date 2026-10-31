@@ -135,6 +135,11 @@ export async function saveAssessment(assessment: Assessment): Promise<void> {
   await AsyncStorage.setItem(ASSESSMENTS_KEY, JSON.stringify(next));
 }
 
+/** Replace the whole assessment list (bulk recalculation, backup restore). */
+export async function saveAllAssessments(assessments: Assessment[]): Promise<void> {
+  await AsyncStorage.setItem(ASSESSMENTS_KEY, JSON.stringify(assessments));
+}
+
 export async function deleteAssessment(id: string): Promise<void> {
   const existing = await loadAssessments();
   const target = existing.find((a) => a.id === id);

@@ -51,6 +51,10 @@ export interface Assessment {
   electricityFactor: number;
   /** Fuel / refrigerant factor dataset version used (absent = pre-2026.2 data). */
   fuelFactorVersion?: string;
+  /** Grid electricity factor dataset version used (absent = pre-2026.4 data). */
+  gridFactorVersion?: string;
+  /** Set when a finalized report was recalculated with different factor datasets. */
+  restatement?: Restatement;
   updatedAt: string;
   /** True when saved via Save progress only (not Calculate Results). */
   isDraft?: boolean;
@@ -74,6 +78,18 @@ export interface Assessment {
   workspaceId?: string;
   /** @deprecated legacy field */
   region?: string;
+}
+
+export interface Restatement {
+  /** Total before recalculation (tCO₂e). */
+  previousTotal: number;
+  /** Factor datasets of the previous result, e.g. "grid 2026.1 · fuels 2026.1". */
+  previousStamp: string;
+  /** Change caused by updated emission factors alone (old activity data, new factors). */
+  factorEffect: number;
+  /** Change caused by edited activity data (new data, new factors). */
+  activityEffect: number;
+  at: string;
 }
 
 export interface AssessmentDraft {
@@ -157,6 +173,10 @@ export function normalizeAssessment(raw: Assessment): Assessment {
       raw.scope1ByGas && typeof raw.scope1ByGas === 'object' ? raw.scope1ByGas : undefined,
     fuelFactorVersion:
       typeof raw.fuelFactorVersion === 'string' ? raw.fuelFactorVersion : undefined,
+    gridFactorVersion:
+      typeof raw.gridFactorVersion === 'string' ? raw.gridFactorVersion : undefined,
+    restatement:
+      raw.restatement && typeof raw.restatement === 'object' ? raw.restatement : undefined,
     notes: typeof raw.notes === 'string' ? raw.notes : '',
     selectedInitiatives: Array.isArray(raw.selectedInitiatives)
       ? (raw.selectedInitiatives as InitiativeKey[])

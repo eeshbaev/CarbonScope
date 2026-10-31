@@ -1,4 +1,5 @@
 import type { Assessment } from '../types';
+import { buildRestatement } from './restatement';
 import { DEFAULT_WORKSPACE_ID } from '../storage/workspace';
 
 /** Preserve enterprise fields when rebuilding from draft. */
@@ -26,5 +27,6 @@ export function mergeAssessmentMeta(
     selectedInitiatives: existing.selectedInitiatives,
     initiativeReminderAt: existing.initiativeReminderAt,
     finalizedAt: built.finalizedAt ?? existing.finalizedAt,
+    restatement: buildRestatement(existing, built),
   };
 }

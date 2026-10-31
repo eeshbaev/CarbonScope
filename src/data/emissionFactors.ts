@@ -8,7 +8,7 @@
  *
  * Method (see docs/FACTOR_SOURCES.md):
  * 1. Official national location-based factors where a current value could be verified
- *    (UK DESNZ 2026, US EPA eGRID2023, India CEA v21, Australia NGA 2025).
+ *    (UK DESNZ 2026, US EPA eGRID2023, India CEA v21, Australia NGA 2025, South Africa DFFE 2024).
  * 2. Otherwise derived from the country's latest annual generation mix (Ember via the Our World in
  *    Data energy dataset, 2025 or 2024) × direct combustion factors per kWh generated:
  *    measured fleet averages from Electricity Maps (EU-ETS 2025 for EU countries, eGRID for the US),
@@ -56,7 +56,7 @@ export const COUNTRY_ELECTRICITY_FACTORS: Record<string, number> = {
   JP: 0.48, // derived: 2025 mix (coal 32%, gas 33%, oil 2%), fleet-median defaults
   KE: 0.082, // derived: 2025 mix (coal 0%, gas 0%, oil 10%), fleet-median defaults
   KR: 0.44, // derived: 2025 mix (coal 31%, gas 28%, oil 1%), fleet-median defaults
-  KZ: 0.689, // derived: 2025 mix (coal 54%, gas 29%, oil 1%), fleet-median defaults
+  KZ: 0.689, // derived: 2025 mix (coal 54%, gas 29%, oil 1%), fleet-median defaults — no official factor found; ageing thermal fleet, likely an underestimate
   MX: 0.349, // derived: 2025 mix (coal 3%, gas 62%, oil 9%), fleet-median defaults
   MY: 0.602, // derived: 2025 mix (coal 45%, gas 34%, oil 1%), fleet-median defaults
   NG: 0.268, // derived: 2025 mix (coal 0%, gas 69%, oil 0%), fleet-median defaults
@@ -77,13 +77,13 @@ export const COUNTRY_ELECTRICITY_FACTORS: Record<string, number> = {
   TR: 0.444, // derived: 2025 mix (coal 34%, gas 22%, oil 0%), fleet-median defaults
   TW: 0.579, // derived: 2025 mix (coal 36%, gas 49%, oil 2%), fleet-median defaults
   US: 0.35, // official: EPA eGRID2023 national total output rate (~771 lb CO2e/MWh)
-  UZ: 0.364, // derived: 2025 mix (coal 7%, gas 72%, oil 2%), fleet-median defaults
+  UZ: 0.364, // derived: 2025 mix (coal 7%, gas 72%, oil 2%), fleet-median defaults — no official factor found; ageing thermal fleet, likely an underestimate
   VN: 0.525, // derived: 2025 mix (coal 48%, gas 6%, oil 0%), fleet-median defaults
-  ZA: 0.85, // derived: 2025 mix (coal 81%, gas 0%, oil 1%), fleet-median defaults
+  ZA: 0.994, // official: DFFE South Africa Grid Emission Factors 2024, domestic generation 0.994 tCO₂e/MWh
 };
 
 export const EMISSION_FACTOR_SOURCES =
-  'Generation-based (direct) factors: DESNZ 2026 · EPA eGRID2023 · CEA v21 · NGA 2025 · derived from Ember 2025 generation mix × EU-ETS/eGRID fleet factors (Electricity Maps)';
+  'Generation-based (direct) factors: DESNZ 2026 · EPA eGRID2023 · CEA v21 · NGA 2025 · DFFE 2024 · derived from Ember 2025 generation mix × EU-ETS/eGRID fleet factors (Electricity Maps)';
 
 let customFactorOverrides: Record<string, number> = {};
 

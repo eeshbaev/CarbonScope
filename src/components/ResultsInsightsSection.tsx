@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Card } from './Card';
 import { EmissionsSparkline } from './EmissionsSparkline';
-import { formatEmissions } from '../calculations';
+import { factorStamp, formatEmissions } from '../calculations';
 import type { TranslationKeys } from '../i18n/locales/en';
 import type { Locale } from '../i18n';
 import type { Assessment } from '../types';
@@ -134,14 +134,34 @@ export function ResultsInsightsSection({
     .replace('{year}', EMISSION_FACTOR_REFERENCE_YEAR)
     .replace('{version}', EMISSION_FACTOR_DATASET_VERSION);
 
+  const restatement = assessment.restatement;
+  const signed = (v: number) => `${v >= 0 ? '+' : '−'}${formatEmissions(Math.abs(v))}`;
+  const mixedFactors = !!prior && factorStamp(prior) !== factorStamp(assessment);
+
   return (
     <>
+      {restatement ? (
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.results.restatementTitle}</Text>
+          <Text style={styles.body}>
+            {t.results.restatementBody
+              .replace('{previous}', formatEmissions(restatement.previousTotal))
+              .replace('{stamp}', restatement.previousStamp)
+              .replace('{current}', formatEmissions(assessment.totalEmissions))
+              .replace('{factor}', signed(restatement.factorEffect))
+              .replace('{activity}', signed(restatement.activityEffect))
+              .replace(/\{unit\}/g, tco2eLabel)}
+          </Text>
+        </Card>
+      ) : null}
+
       {comparisons.length > 0 ? (
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>{t.results.comparisonsTitle}</Text>
           {comparisons.map((c, i) => (
             <ComparisonBar key={i} label={insightLabel(t, c)} percent={c.percent} t={t} styles={styles} />
           ))}
+          {mixedFactors ? <Text style={styles.caption}>{t.results.mixedFactorsNote}</Text> : null}
         </Card>
       ) : null}
 

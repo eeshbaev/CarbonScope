@@ -12,6 +12,11 @@ import {
   View,
 } from 'react-native';
 import { Button } from '../components/Button';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { currentFactorStamp } from '../calculations';
+import { loadAssessments, saveAllAssessments } from '../storage';
+import { appendMethodologyLog } from '../storage/methodologyLog';
+import { outdatedAssessments, recalculateAll } from '../utils/recalculateAll';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { ALL_COUNTRIES } from '../data/countries';
 import {
@@ -55,9 +60,39 @@ export function EmissionFactorsScreen({ navigation }: Props) {
   const [editCode, setEditCode] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
+  const [outdatedCount, setOutdatedCount] = useState(0);
+  const [confirmRecalc, setConfirmRecalc] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
+
   const reload = useCallback(async () => {
     setCustom(await loadCustomElectricityFactors());
+    setOutdatedCount(outdatedAssessments(await loadAssessments()).length);
   }, []);
+
+  const runRecalculateAll = async () => {
+    setConfirmRecalc(false);
+    setRecalculating(true);
+    try {
+      const all = await loadAssessments();
+      const { next, changed } = recalculateAll(all);
+      await saveAllAssessments(next);
+      for (const a of next) {
+        if (a.finalizedAt && !a.isDraft && a.restatement) {
+          await appendMethodologyLog(a, 'recalculated');
+        }
+      }
+      await reload();
+      Alert.alert(
+        changed > 0
+          ? t.settings.recalcAllDone.replace('{count}', String(changed))
+          : t.settings.recalcAllNone
+      );
+    } catch {
+      Alert.alert(t.common.error);
+    } finally {
+      setRecalculating(false);
+    }
+  };
 
   useEffect(() => {
     void reload();
@@ -108,6 +143,24 @@ export function EmissionFactorsScreen({ navigation }: Props) {
         style={styles.list}
         ListHeaderComponent={
           <View style={styles.fuelCard}>
+            <View style={styles.recalcCard}>
+              <Text style={styles.fuelTitle}>{t.settings.recalcAllTitle}</Text>
+              <Text style={styles.meta}>
+                {t.settings.recalcAllHint.replace('{version}', currentFactorStamp())}
+              </Text>
+              <Text style={styles.meta}>
+                {outdatedCount > 0
+                  ? t.settings.recalcAllOutdated.replace('{count}', String(outdatedCount))
+                  : t.settings.recalcAllNone}
+              </Text>
+              {outdatedCount > 0 ? (
+                <Button
+                  title={t.settings.recalcAllButton}
+                  onPress={() => setConfirmRecalc(true)}
+                  loading={recalculating}
+                />
+              ) : null}
+            </View>
             <Text style={styles.fuelTitle}>{t.settings.fuelFactorsTitle}</Text>
             <Text style={styles.meta}>
               {t.settings.fuelFactorsVersion
@@ -218,12 +271,30 @@ export function EmissionFactorsScreen({ navigation }: Props) {
           </View>
         </View>
       </Modal>
+      <ConfirmModal
+        visible={confirmRecalc}
+        title={t.settings.recalcAllConfirmTitle}
+        message={t.settings.recalcAllConfirmMessage.replace('{count}', String(outdatedCount))}
+        confirmLabel={t.settings.recalcAllButton}
+        cancelLabel={t.common.cancel}
+        onConfirm={() => void runRecalculateAll()}
+        onCancel={() => setConfirmRecalc(false)}
+      />
     </ScreenLayout>
   );
 }
 
 function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSlice) {
   return StyleSheet.create({
+    recalcCard: {
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderRadius: radii.md,
+      borderWidth: 1,
+      borderColor: colors.primaryLight,
+      backgroundColor: colors.primaryMuted,
+      gap: spacing.sm,
+    },
     fuelCard: {
       paddingBottom: spacing.md,
     },

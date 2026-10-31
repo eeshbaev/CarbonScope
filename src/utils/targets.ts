@@ -1,3 +1,4 @@
+import { factorStamp } from '../calculations';
 import type { Assessment } from '../types';
 import type { ReductionTarget } from '../types/enterprise';
 import { comparableTotals, findBaseAssessment, type ComparisonBasis } from './assessmentHistory';
@@ -13,6 +14,8 @@ export type TargetGapResult = {
   onTrack: boolean | null;
   /** 'scope12' when Scope 3 coverage differs from the base period. */
   basis: ComparisonBasis;
+  /** Base period was calculated with different factor datasets. */
+  mixedFactors: boolean;
 };
 
 export function computeTargetGap(
@@ -36,6 +39,7 @@ export function computeTargetGap(
       gapPercent: null,
       onTrack: null,
       basis: 'total',
+      mixedFactors: false,
     };
   }
 
@@ -74,6 +78,7 @@ export function computeTargetGap(
     gapPercent,
     onTrack,
     basis: totals.basis,
+    mixedFactors: !!base && factorStamp(base) !== factorStamp(assessment),
   };
 }
 

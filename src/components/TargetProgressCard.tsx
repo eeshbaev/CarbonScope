@@ -71,6 +71,9 @@ export function TargetProgressCard({ assessment, allAssessments, t, compact }: P
           {gap.onTrack ? et.onTrack : et.aboveTarget}
         </Text>
       ) : null}
+      {!compact && gap.mixedFactors ? (
+        <Text style={styles.muted}>{t.results.mixedFactorsNote}</Text>
+      ) : null}
       {!compact && gap.basis === 'scope12' ? (
         <Text style={styles.muted}>{et.basisScope12}</Text>
       ) : null}

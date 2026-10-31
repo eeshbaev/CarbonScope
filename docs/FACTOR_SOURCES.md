@@ -82,7 +82,8 @@ T&D losses belong to Scope 3 Category 3. The previous table (dataset 2026.1) mat
 Method:
 1. **Official national factors** where a current value was verified: UK DESNZ 2026 (0.13096),
    US EPA eGRID2023 national total output rate (~771 lb CO₂e/MWh ≈ 0.35), India CEA CO₂ Baseline
-   Database v21 FY2024-25 weighted average (0.7117), Australia NGA Factors 2025 national (0.62).
+   Database v21 FY2024-25 weighted average (0.7117), Australia NGA Factors 2025 national (0.62),
+   South Africa DFFE Grid Emission Factors 2024 domestic generation (0.994).
 2. **Derived** elsewhere: latest annual generation by fuel (Ember via the Our World in Data energy
    dataset, `owid/energy-data`, 2025 or 2024) × direct combustion factors per kWh generated from
    Electricity Maps (`electricitymaps-contrib/config`): measured fleet averages for EU countries
@@ -91,7 +92,7 @@ Method:
    biomass are 0 direct (biogenic CO₂ is outside the scopes). Imports are not adjusted.
 3. Validation: the method gives UK 0.158 vs official 0.131, India 0.745 vs 0.712, US 0.329 vs 0.35,
    China 0.583 vs MEE ≈ 0.53–0.57 (recent years). Old gas/coal fleets (e.g. Uzbekistan, Kazakhstan,
-   South Africa) may be under-estimated; national official factors should replace them when available.
+   South Africa before the DFFE value was added) may be under-estimated; KZ and UZ have no official factor available; national official factors should replace them when available.
 4. World default (0.449) is derived the same way from the 2025 global mix.
 
 | Country | kg CO₂e/kWh | Source |
@@ -150,7 +151,7 @@ Method:
 | US | 0.35 | official: EPA eGRID2023 national total output rate (~771 lb CO2e/MWh) |
 | UZ | 0.364 | derived: 2025 mix (coal 7%, gas 72%, oil 2%), fleet-median defaults |
 | VN | 0.525 | derived: 2025 mix (coal 48%, gas 6%, oil 0%), fleet-median defaults |
-| ZA | 0.85 | derived: 2025 mix (coal 81%, gas 0%, oil 1%), fleet-median defaults |
+| ZA | 0.994 | official: DFFE South Africa Grid Emission Factors 2024, domestic generation (reported by MyBroadband and BizNews) |
 
 ## Scope 3 — activity-based (DESNZ 2026)
 

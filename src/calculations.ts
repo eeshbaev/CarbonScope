@@ -1,5 +1,8 @@
 import { currencyForCountry, toUsd2022, type CurrencyCode } from './data/currencies';
-import { getElectricityFactorForCountry } from './data/emissionFactors';
+import {
+  EMISSION_FACTOR_DATASET_VERSION,
+  getElectricityFactorForCountry,
+} from './data/emissionFactors';
 import {
   FUEL_FACTOR_DATASET,
   FUEL_FACTORS,
@@ -191,6 +194,18 @@ export function computeAssessmentEmissions(
   });
 }
 
+/** Factor datasets a report was calculated with (legacy reports predate version stamps). */
+export function factorStamp(a: Pick<Assessment, 'gridFactorVersion' | 'fuelFactorVersion'>): string {
+  return `grid ${a.gridFactorVersion ?? '2026.1'} · fuels ${a.fuelFactorVersion ?? '2026.1'}`;
+}
+
+export function currentFactorStamp(): string {
+  return factorStamp({
+    gridFactorVersion: EMISSION_FACTOR_DATASET_VERSION,
+    fuelFactorVersion: FUEL_FACTOR_DATASET.version,
+  });
+}
+
 export function calculateScope1Emissions(scope1: AssessmentDraft['scope1']): number {
   let kg = 0;
   for (const key of SCOPE1_FUELS) kg += resolveCategoryTotal(scope1[key]) * fuelFactorTotal(key);
@@ -230,6 +245,7 @@ export function buildAssessment(
     totalEmissions: e.total,
     electricityFactor: e.gridFactor,
     fuelFactorVersion: FUEL_FACTOR_DATASET.version,
+    gridFactorVersion: EMISSION_FACTOR_DATASET_VERSION,
     updatedAt: new Date().toISOString(),
     isDraft: !options?.finalize,
     finalizedAt: options?.finalize ? new Date().toISOString() : undefined,

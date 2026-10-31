@@ -7,6 +7,16 @@ import type { TranslationKeys } from '../locales/en';
  */
 export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   ru: {
+    settings: {
+      recalcAllTitle: 'Обновить отчёты до последних коэффициентов',
+      recalcAllHint: 'Пересчитывает сохранённые отчёты по текущим наборам коэффициентов ({version}), чтобы сравнения и цели опирались на одну методологию. Каждый финальный отчёт сохраняет запись о прежнем результате.',
+      recalcAllOutdated: 'Отчётов со старыми коэффициентами: {count}.',
+      recalcAllNone: 'Все отчёты используют последние коэффициенты.',
+      recalcAllButton: 'Пересчитать все отчёты',
+      recalcAllConfirmTitle: 'Пересчитать все отчёты?',
+      recalcAllConfirmMessage: 'Отчётов к пересчёту по последним коэффициентам: {count}. Данные о деятельности не меняются, а каждый финальный отчёт сохраняет прежний результат как примечание о пересчёте.',
+      recalcAllDone: 'Пересчитано отчётов: {count}.',
+    },
     home: { ghgAligned: 'На основе GHG Protocol' },
     onboarding: {
       scope2Body: 'Косвенные выбросы от покупной электроэнергии, тепла, пара и холода.',
@@ -43,9 +53,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Сравнение по Scope 1 + 2, так как охват Scope 3 отличается от базового периода.',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: 'Пересчитано с обновлёнными коэффициентами',
+      restatementBody: 'Ранее {previous} {unit} ({stamp}). Сейчас {current} {unit}: {factor} за счёт обновлённых коэффициентов и {activity} за счёт изменённых данных о деятельности.',
+      mixedFactorsNote: 'Эти отчёты рассчитаны по разным наборам коэффициентов. Пересчитайте все отчёты в «Настройки → Коэффициенты выбросов» для сопоставимого сравнения.',
+    },
   },
   fr: {
+    settings: {
+      recalcAllTitle: 'Mettre les rapports à jour avec les derniers facteurs',
+      recalcAllHint: 'Recalcule les rapports enregistrés avec les jeux de facteurs actuels ({version}) afin que comparaisons et objectifs reposent sur une seule méthode. Chaque rapport finalisé conserve une note de son résultat précédent.',
+      recalcAllOutdated: '{count} rapports utilisent d’anciens facteurs.',
+      recalcAllNone: 'Tous les rapports utilisent les derniers facteurs.',
+      recalcAllButton: 'Recalculer tous les rapports',
+      recalcAllConfirmTitle: 'Recalculer tous les rapports ?',
+      recalcAllConfirmMessage: '{count} rapports seront recalculés avec les derniers facteurs d’émission. Les données d’activité ne changent pas et chaque rapport finalisé conserve son résultat précédent dans une note de retraitement.',
+      recalcAllDone: '{count} rapports recalculés.',
+    },
     home: { ghgAligned: 'Basé sur le GHG Protocol' },
     onboarding: {
       scope2Body: 'Émissions indirectes de l’électricité, de la chaleur, de la vapeur et du froid achetés.',
@@ -82,9 +107,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Comparaison sur les Scopes 1 + 2, car le périmètre Scope 3 diffère de la période de référence.',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: 'Recalculé avec des facteurs mis à jour',
+      restatementBody: 'Auparavant {previous} {unit} ({stamp}). Désormais {current} {unit} : {factor} dû aux facteurs d’émission mis à jour et {activity} dû aux données d’activité modifiées.',
+      mixedFactorsNote: 'Ces rapports utilisent des jeux de facteurs différents. Recalculez tous les rapports dans Réglages → Facteurs d’émission pour une comparaison homogène.',
+    },
   },
   de: {
+    settings: {
+      recalcAllTitle: 'Berichte auf die neuesten Faktoren aktualisieren',
+      recalcAllHint: 'Berechnet gespeicherte Berichte mit den aktuellen Faktordatensätzen ({version}) neu, damit Vergleiche und Ziele auf einer Methodik beruhen. Jeder abgeschlossene Bericht behält einen Hinweis auf sein vorheriges Ergebnis.',
+      recalcAllOutdated: '{count} Berichte verwenden ältere Faktoren.',
+      recalcAllNone: 'Alle Berichte verwenden die neuesten Faktoren.',
+      recalcAllButton: 'Alle Berichte neu berechnen',
+      recalcAllConfirmTitle: 'Alle Berichte neu berechnen?',
+      recalcAllConfirmMessage: '{count} Berichte werden mit den neuesten Emissionsfaktoren neu berechnet. Die Aktivitätsdaten bleiben unverändert; jeder abgeschlossene Bericht behält sein vorheriges Ergebnis als Korrekturhinweis.',
+      recalcAllDone: '{count} Berichte neu berechnet.',
+    },
     home: { ghgAligned: 'Auf Basis des GHG Protocol' },
     onboarding: {
       scope2Body: 'Indirekte Emissionen aus eingekauftem Strom, Wärme, Dampf und Kälte.',
@@ -121,9 +161,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Vergleich auf Basis Scope 1 + 2, da die Scope-3-Abdeckung von der Basisperiode abweicht.',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: 'Mit aktualisierten Faktoren neu berechnet',
+      restatementBody: 'Vorher {previous} {unit} ({stamp}). Jetzt {current} {unit}: {factor} durch aktualisierte Emissionsfaktoren und {activity} durch geänderte Aktivitätsdaten.',
+      mixedFactorsNote: 'Diese Berichte nutzen unterschiedliche Faktordatensätze. Berechnen Sie alle Berichte unter Einstellungen → Emissionsfaktoren neu, um vergleichbar zu bleiben.',
+    },
   },
   it: {
+    settings: {
+      recalcAllTitle: 'Aggiorna i report agli ultimi fattori',
+      recalcAllHint: 'Ricalcola i report salvati con i dataset di fattori attuali ({version}) così confronti e obiettivi usano un’unica metodologia. Ogni report finalizzato conserva una nota del risultato precedente.',
+      recalcAllOutdated: '{count} report usano fattori meno recenti.',
+      recalcAllNone: 'Tutti i report usano gli ultimi fattori.',
+      recalcAllButton: 'Ricalcola tutti i report',
+      recalcAllConfirmTitle: 'Ricalcolare tutti i report?',
+      recalcAllConfirmMessage: '{count} report verranno ricalcolati con gli ultimi fattori di emissione. I dati di attività non cambiano e ogni report finalizzato conserva il risultato precedente come nota di rideterminazione.',
+      recalcAllDone: '{count} report ricalcolati.',
+    },
     home: { ghgAligned: 'Basato sul GHG Protocol' },
     onboarding: {
       scope2Body: 'Emissioni indirette da elettricità, calore, vapore e freddo acquistati.',
@@ -160,9 +215,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Confronto su Scope 1 + 2 perché la copertura Scope 3 differisce dal periodo base.',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: 'Ricalcolato con fattori aggiornati',
+      restatementBody: 'In precedenza {previous} {unit} ({stamp}). Ora {current} {unit}: {factor} dovuto ai fattori di emissione aggiornati e {activity} ai dati di attività modificati.',
+      mixedFactorsNote: 'Questi report usano dataset di fattori diversi. Ricalcola tutti i report in Impostazioni → Fattori di emissione per un confronto omogeneo.',
+    },
   },
   ja: {
+    settings: {
+      recalcAllTitle: '報告を最新の係数に更新',
+      recalcAllHint: '保存済みの報告を現在の係数データセット（{version}）で再計算し、比較や目標を同じ方法論にそろえます。確定済みの各報告には以前の結果が記録されます。',
+      recalcAllOutdated: '古い係数を使っている報告：{count} 件',
+      recalcAllNone: 'すべての報告が最新の係数を使用しています。',
+      recalcAllButton: 'すべての報告を再計算',
+      recalcAllConfirmTitle: 'すべての報告を再計算しますか？',
+      recalcAllConfirmMessage: '{count} 件の報告を最新の排出係数で再計算します。活動量データは変わらず、確定済みの各報告には以前の結果が再表示の注記として残ります。',
+      recalcAllDone: '{count} 件の報告を再計算しました。',
+    },
     home: { ghgAligned: 'GHGプロトコルに基づく' },
     onboarding: {
       scope2Body: '購入した電力・熱・蒸気・冷熱による間接排出。',
@@ -199,9 +269,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Scope 3 の対象範囲が基準期間と異なるため、Scope 1 + 2 で比較しています。',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: '更新された係数で再計算済み',
+      restatementBody: '以前は {previous} {unit}（{stamp}）。現在は {current} {unit}：係数の更新による変化 {factor}、活動量データの変更による変化 {activity}。',
+      mixedFactorsNote: 'これらの報告は異なる係数データセットで計算されています。同じ条件で比較するには、設定 → 排出係数ですべての報告を再計算してください。',
+    },
   },
   zh: {
+    settings: {
+      recalcAllTitle: '将报告更新为最新因子',
+      recalcAllHint: '使用当前因子数据集（{version}）重新计算已保存的报告，使比较和目标基于同一方法。每份已定稿报告都会保留其先前结果的说明。',
+      recalcAllOutdated: '{count} 份报告使用旧因子。',
+      recalcAllNone: '所有报告均使用最新因子。',
+      recalcAllButton: '重新计算所有报告',
+      recalcAllConfirmTitle: '重新计算所有报告？',
+      recalcAllConfirmMessage: '将使用最新排放因子重新计算 {count} 份报告。活动数据不变，每份已定稿报告会将先前结果保留为重述说明。',
+      recalcAllDone: '已重新计算 {count} 份报告。',
+    },
     home: { ghgAligned: '基于 GHG Protocol' },
     onboarding: {
       scope2Body: '外购电力、热力、蒸汽和冷量产生的间接排放。',
@@ -238,9 +323,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: '由于 Scope 3 覆盖范围与基准期不同，按 Scope 1 + 2 比较。',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: '已使用更新后的因子重新计算',
+      restatementBody: '此前为 {previous} {unit}（{stamp}）。现在为 {current} {unit}：其中 {factor} 来自排放因子更新，{activity} 来自活动数据变化。',
+      mixedFactorsNote: '这些报告使用了不同的因子数据集。请在“设置 → 排放因子”中重新计算所有报告，以便同口径比较。',
+    },
   },
   es: {
+    settings: {
+      recalcAllTitle: 'Actualizar los informes a los últimos factores',
+      recalcAllHint: 'Recalcula los informes guardados con los conjuntos de factores actuales ({version}) para que comparaciones y objetivos usen una sola metodología. Cada informe finalizado conserva una nota de su resultado anterior.',
+      recalcAllOutdated: '{count} informes usan factores anteriores.',
+      recalcAllNone: 'Todos los informes usan los últimos factores.',
+      recalcAllButton: 'Recalcular todos los informes',
+      recalcAllConfirmTitle: '¿Recalcular todos los informes?',
+      recalcAllConfirmMessage: 'Se recalcularán {count} informes con los últimos factores de emisión. Los datos de actividad no cambian y cada informe finalizado conserva su resultado anterior como nota de reexpresión.',
+      recalcAllDone: '{count} informes recalculados.',
+    },
     home: { ghgAligned: 'Basado en el GHG Protocol' },
     onboarding: {
       scope2Body: 'Emisiones indirectas de la electricidad, el calor, el vapor y el frío comprados.',
@@ -277,9 +377,24 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Comparado en Scope 1 + 2 porque la cobertura de Scope 3 difiere del periodo base.',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: 'Recalculado con factores actualizados',
+      restatementBody: 'Antes {previous} {unit} ({stamp}). Ahora {current} {unit}: {factor} por los factores de emisión actualizados y {activity} por cambios en los datos de actividad.',
+      mixedFactorsNote: 'Estos informes usan conjuntos de factores distintos. Recalcule todos los informes en Ajustes → Factores de emisión para comparar en igualdad de condiciones.',
+    },
   },
   pt: {
+    settings: {
+      recalcAllTitle: 'Atualizar relatórios para os fatores mais recentes',
+      recalcAllHint: 'Recalcula os relatórios salvos com os conjuntos de fatores atuais ({version}) para que comparações e metas usem uma só metodologia. Cada relatório finalizado mantém uma nota do resultado anterior.',
+      recalcAllOutdated: '{count} relatórios usam fatores antigos.',
+      recalcAllNone: 'Todos os relatórios usam os fatores mais recentes.',
+      recalcAllButton: 'Recalcular todos os relatórios',
+      recalcAllConfirmTitle: 'Recalcular todos os relatórios?',
+      recalcAllConfirmMessage: '{count} relatórios serão recalculados com os fatores de emissão mais recentes. Os dados de atividade não mudam, e cada relatório finalizado mantém o resultado anterior como nota de reapresentação.',
+      recalcAllDone: '{count} relatórios recalculados.',
+    },
     home: { ghgAligned: 'Baseado no GHG Protocol' },
     onboarding: {
       scope2Body: 'Emissões indiretas de eletricidade, calor, vapor e frio comprados.',
@@ -316,6 +431,11 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
         basisScope12: 'Comparado em Scope 1 + 2 porque a cobertura do Scope 3 difere do período-base.',
       },
     },
-    results: { comparisonLabels: { scope12: 'Scope 1 + 2' } },
+    results: {
+      comparisonLabels: { scope12: 'Scope 1 + 2' },
+      restatementTitle: 'Recalculado com fatores atualizados',
+      restatementBody: 'Antes {previous} {unit} ({stamp}). Agora {current} {unit}: {factor} pelos fatores de emissão atualizados e {activity} pelas mudanças nos dados de atividade.',
+      mixedFactorsNote: 'Estes relatórios usam conjuntos de fatores diferentes. Recalcule todos os relatórios em Configurações → Fatores de emissão para uma comparação equivalente.',
+    },
   },
 };

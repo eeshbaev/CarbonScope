@@ -1,4 +1,9 @@
-import { computeAssessmentEmissions, formatEmissions, type EmissionsBreakdown } from '../calculations';
+import {
+  computeAssessmentEmissions,
+  factorStamp,
+  formatEmissions,
+  type EmissionsBreakdown,
+} from '../calculations';
 import type { EmissionCategoryKey } from '../data/categoryEmblems';
 import { USD_DEFLATOR_TO_2022, usdPerUnit } from '../data/currencies';
 import {
@@ -209,6 +214,21 @@ export function buildMethodologyRows(
         .replace('{deflator}', USD_DEFLATOR_TO_2022.toFixed(4)),
     });
   }
+  if (assessment.restatement) {
+    const rs = assessment.restatement;
+    rows.push({
+      key: 'restatement',
+      label: r.restatementTitle,
+      value: r.restatementBody
+        .replace('{previous}', formatEmissions(rs.previousTotal))
+        .replace('{stamp}', rs.previousStamp)
+        .replace('{current}', formatEmissions(assessment.totalEmissions))
+        .replace('{factor}', `${rs.factorEffect >= 0 ? '+' : '−'}${formatEmissions(Math.abs(rs.factorEffect))}`)
+        .replace('{activity}', `${rs.activityEffect >= 0 ? '+' : '−'}${formatEmissions(Math.abs(rs.activityEffect))}`)
+        .replace(/\{unit\}/g, 'tCO₂e'),
+    });
+  }
+  rows.push({ key: 'datasets', label: r.pdfFactorVersion, value: factorStamp(assessment) });
   if (assessment.scope3.includeFuelEnergyUpstream) {
     rows.push({ key: 'cat3', label: r.pdfCat3Basis, value: r.cat3Basis });
   }
