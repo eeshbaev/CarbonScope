@@ -6,15 +6,22 @@
 
 export type UnitKind = 'fuel' | 'gas' | 'electricity' | 'mass' | 'distance';
 
-export type FuelVolumeUnit = 'liters' | 'gallons';
+export type FuelVolumeUnit = 'liters' | 'gallons' | 'impGallons';
 export type GasEnergyUnit = 'kwh' | 'm3';
 export type ElectricityUnit = 'kwh' | 'mwh';
 export type MassUnit = 'kg' | 'tonnes';
 export type DistanceUnit = 'km' | 'miles';
 export type DisplayUnit = FuelVolumeUnit | GasEnergyUnit | ElectricityUnit | MassUnit | DistanceUnit;
 
-export const LITERS_PER_GALLON = 3.78541;
-export const KWH_PER_M3_GAS = 10.55;
+/** US liquid gallon. */
+export const LITERS_PER_GALLON = 3.785411784;
+/** Imperial (UK) gallon. */
+export const LITERS_PER_IMPERIAL_GALLON = 4.54609;
+/**
+ * Natural gas energy per m³ on a gross calorific value basis, matching the gross-CV fuel factors:
+ * DESNZ 2025 natural gas 2.06672 kg CO₂e/m³ ÷ 0.18296 kg CO₂e/kWh = 11.296 kWh/m³.
+ */
+export const KWH_PER_M3_GAS = 11.296;
 export const KWH_PER_MWH = 1000;
 export const KG_PER_TONNE = 1000;
 export const KM_PER_MILE = 1.609344;
@@ -24,6 +31,7 @@ export const UNIT_OPTIONS: Record<UnitKind, { unit: DisplayUnit; toStandard: num
   fuel: [
     { unit: 'liters', toStandard: 1 },
     { unit: 'gallons', toStandard: LITERS_PER_GALLON },
+    { unit: 'impGallons', toStandard: LITERS_PER_IMPERIAL_GALLON },
   ],
   gas: [
     { unit: 'kwh', toStandard: 1 },

@@ -149,7 +149,10 @@ export const en = {
     scope1Body:
       'Direct emissions from company-owned fuel usage such as diesel, gasoline, and natural gas.',
     scope2Title: 'What are Scope 2 emissions?',
-    scope2Body: 'Indirect emissions from purchased electricity consumption.',
+    scope2Body: 'Indirect emissions from purchased electricity, heat, steam and cooling.',
+    scope3Title: 'What are Scope 3 emissions?',
+    scope3Body:
+      'Other indirect emissions in your value chain — purchases, freight, business travel, commuting and waste. Optional, but increasingly requested.',
     whyTitle: 'Why CarbonScope?',
     whyBody:
       'CarbonScope helps companies, consultants, banks, and ESG professionals quickly estimate operational carbon emissions aligned with GHG Protocol methodology.',
@@ -165,7 +168,7 @@ export const en = {
   learnMore: {
     title: 'About CarbonScope',
     body:
-      'CarbonScope provides fast Scope 1 and Scope 2 estimates aligned with the GHG Protocol — ideal for SMEs and ESG consultants.\n\nAll results are in tCO₂e.\n\nElectricity factors update automatically by country.',
+      'CarbonScope estimates Scope 1, 2 and 3 emissions based on the GHG Protocol, for SMEs and ESG consultants.\n\nAll results are in tCO₂e using IPCC AR6 global warming potentials.\n\nGrid electricity factors are set automatically by country (generation emissions, location-based). Add your contract details to get the market-based figure as well.',
     libraryTitle: 'Knowledge library',
     librarySubtitle: 'Offline reference for reporting specialists',
     openLibrary: 'Open knowledge library',
@@ -173,17 +176,17 @@ export const en = {
       ghgProtocol: {
         title: 'GHG Protocol overview',
         body:
-          'The Greenhouse Gas Protocol Corporate Standard is the most widely used framework for company-level inventories. Scope 1 covers direct combustion; Scope 2 covers purchased electricity (location-based factors by grid). Scope 3 covers the value chain and is outside this app.\n\nCarbonScope implements Scope 1 fuel factors and Scope 2 grid factors suitable for SME baselines and internal reporting — not a substitute for third-party assurance.',
+          'The Greenhouse Gas Protocol Corporate Standard is the most widely used framework for company-level inventories. Scope 1 covers direct emissions from fuels and refrigerants. Scope 2 covers purchased electricity, heat, steam and cooling, reported both location-based and market-based. Scope 3 covers the value chain.\n\nCarbonScope covers Scope 1, Scope 2 (both methods) and Scope 3 categories 1, 3, 4, 5, 6 and 7 with documented public factors. It suits SME baselines and internal reporting — it is not a substitute for third-party assurance.',
       },
       scope1vs2: {
         title: 'Scope 1 vs Scope 2',
         body:
-          'Scope 1: diesel, petrol, and natural gas burned in assets you control (fleet, boilers, generators).\n\nScope 2: electricity purchased from the grid — emissions depend on the country or region generation mix (kg CO₂e/kWh).\n\nTip: keep utility and fuel invoices for each reporting period; they are the primary evidence for audits.',
+          'Scope 1: fuels burned in assets you control (vehicles, boilers, generators) and refrigerant leaks from air conditioning and refrigeration.\n\nScope 2: electricity, heat, steam and cooling you buy. Location-based emissions depend on the generation mix of the grid where you consume it (kg CO₂e/kWh).\n\nTip: keep utility, fuel and service invoices for each reporting period; they are the primary evidence for audits.',
       },
       csrd: {
         title: 'CSRD & ESRS E1 (EU)',
         body:
-          'The EU Corporate Sustainability Reporting Directive (CSRD) requires large and listed companies to disclose sustainability information, including climate (ESRS E1). Scope 1 and 2 are typically reported first, with increasing expectations for data quality and assurance over time.\n\nSMEs often prepare Scope 1 & 2 data for customers, banks, or supply-chain questionnaires before full CSRD applies to them directly.',
+          'The EU Corporate Sustainability Reporting Directive (CSRD) requires climate disclosures under ESRS E1, including Scope 1, Scope 2 and significant Scope 3 emissions. Since the Omnibus I amendments (Directive (EU) 2026/470), the CSRD applies to companies with more than 1,000 employees and over €450 million net turnover; listed SMEs are no longer in scope.\n\nSmaller companies still receive data requests from customers and banks that report. The voluntary SME standard (VSME) is designed for these requests.',
       },
       iso14064: {
         title: 'ISO 14064-1',
@@ -193,7 +196,7 @@ export const en = {
       scope2Methods: {
         title: 'Scope 2: location-based vs market-based',
         body:
-          'Location-based: electricity emissions use the average grid emission factor for the country where consumption occurs (kg CO₂e/kWh). This is how CarbonScope works when you select a country.\n\nMarket-based: reflects green tariffs, RECs/GOs, and PPAs where you can claim credible certificates. That needs separate tools and documentation. CarbonScope applies the GHG Protocol location-based approach.',
+          'Location-based: electricity emissions use the average generation emission factor of the grid where consumption occurs (kg CO₂e/kWh). CarbonScope sets it from your country.\n\nMarket-based: reflects what you buy — renewable certificates (GOs, RECs, I-RECs), PPAs, your supplier’s emission factor, or a residual mix. Enter these on the Scope 2 screen; CarbonScope reports both figures, as the GHG Protocol requires. Keep certificates and contracts on file.\n\nThe GHG Protocol is revising its Scope 2 Guidance (consultation closed in January 2026), with stricter rules such as hourly matching proposed for market-based claims.',
       },
       dataEvidence: {
         title: 'Evidence checklist for reporting',
@@ -203,7 +206,7 @@ export const en = {
       gridFactors: {
         title: 'Grid factors & Settings',
         body:
-          'Scope 2 in CarbonScope uses public average grid factors by country (from sources such as IEA, eGRID, and DEFRA). Results and Settings show the dataset version and reference year.\n\nIn Settings → Emission factors you can enter a custom kg CO₂e/kWh for any country — for example a contractual or regional factor. Reset restores the default.',
+          'Scope 2 in CarbonScope uses generation-based (direct) grid factors by country: official national factors where available (UK DESNZ, US EPA eGRID, India CEA, Australia NGA) and otherwise factors derived from each country’s latest annual generation mix. Upstream fuel supply and grid losses are counted separately in Scope 3 Category 3. Results and Settings show the dataset version and reference year.\n\nIn Settings → Emission factors you can enter a custom kg CO₂e/kWh for any country, for example a national or utility factor. Saved reports keep the factor used when they were calculated.',
       },
       firstAssessment: {
         title: 'Your first assessment: step by step',
@@ -213,7 +216,7 @@ export const en = {
     },
   },
   home: {
-    ghgAligned: 'GHG Protocol Aligned',
+    ghgAligned: 'Based on the GHG Protocol',
     scopeCalculator: 'Scope 1, 2 & 3 CO₂ Calculator',
     emptyTitle: 'No assessments yet',
     emptyText: 'Tap the button below to create your first company assessment.',
@@ -476,7 +479,7 @@ export const en = {
     monthlyCategoriesSuffix: ' ({categories})',
     refresh6Title: 'Time to update your data',
     refresh6Body:
-      'It has been 6 months since you updated {company}. Recalculate Scope 1 & 2 emissions with current fuel and electricity use.',
+      'It has been 6 months since you updated {company}. Recalculate your emissions with current fuel, energy and activity data.',
     refresh12Title: 'Annual update reminder',
     refresh12Body:
       'It has been 12 months since you updated {company}. Refresh your assessment for accurate reporting.',
@@ -485,7 +488,7 @@ export const en = {
       '{company}: your {period} reporting window ends in 7 days. Review or finalize your inputs.',
     reportingCalendarTitle: 'Reporting deadline approaching',
     reportingCalendarBody:
-      '{company}: {period} reporting closes in two weeks. Finalize Scope 1 & 2 data and export your evidence pack.',
+      '{company}: {period} reporting closes in two weeks. Finalize your data and export your evidence pack.',
     firstSuccessTitle: 'Your emissions report is ready',
     firstSuccessBody:
       'Open CarbonScope to view results and export a PDF. Tip: Scope 2 changes when you update country or electricity use.',
@@ -494,7 +497,7 @@ export const en = {
     insightTap: 'Tap to read',
     reengagementTitle: 'Update your carbon assessment',
     reengagementBody:
-      'Still tracking {company}? Update this period\'s fuels and electricity for an accurate Scope 1 & 2 picture.',
+      'Still tracking {company}? Update this period’s fuel, energy and activity data for an accurate picture.',
     tips: {
       scope1Vs2:
         'Scope 1 covers fuels you burn directly (diesel, petrol, natural gas). Scope 2 covers purchased electricity — both are core to GHG Protocol inventories.',
@@ -523,13 +526,13 @@ export const en = {
       iso14064:
         'ISO 14064-1 guides quantification and reporting of organisation-level GHG inventories. It complements the GHG Protocol and is referenced in many national schemes.',
       csrdEsrs:
-        'In the EU, the CSRD and ESRS E1 require large and listed companies to report emissions with increasing assurance. Scope 1 & 2 are the usual starting point.',
+        'In the EU, CSRD and ESRS E1 now apply to companies with more than 1,000 employees and over €450 million turnover (Omnibus I, 2026). Those companies often ask their suppliers for Scope 1 & 2 data.',
       tcfdIfrs:
         'TCFD and ISSB (IFRS S2) encourage disclosure of climate risks and emissions. Reliable Scope 1 & 2 data supports transition planning and financial filings.',
       parisAgreement:
-        'The Paris Agreement (2015) aims to limit warming well below 2°C. National targets flow to policies — companies contribute through measured reductions in their own operations.',
+        'The Paris Agreement (2015) aims to hold warming well below 2°C and to pursue efforts to limit it to 1.5°C. Company reductions contribute to national targets.',
       kyotoHistory:
-        'The Kyoto Protocol (1995–2012 era) introduced binding targets for many industrialised countries and helped standardise how nations account for emissions.',
+        'The Kyoto Protocol (adopted 1997, in force 2005) set binding targets for industrialised countries for 2008–2012 and, under the Doha Amendment, 2013–2020. It helped standardise how nations account for emissions.',
       co2Science:
         'CO₂ and other GHGs trap heat in the atmosphere. Human activities — especially burning fossil fuels — have raised atmospheric CO₂ well above pre-industrial levels.',
       climateBusinessRisk:
@@ -547,7 +550,7 @@ export const en = {
       dataQuality:
         'Good inventories document sources (bills, meters), assumptions, and periods. Notes in your assessment help auditors and your future self.',
       scope3Note:
-        'Scope 3 covers value-chain emissions (suppliers, travel, products). Scope 1 & 2 inventories are the foundation — many frameworks expect them first.',
+        'Scope 3 covers value-chain emissions such as purchases, freight, business travel, commuting and waste. CarbonScope lets you add the most common categories alongside Scope 1 & 2.',
       assurance:
         'Third-party verification of GHG data is increasingly expected. Consistent methods and retained invoices make assurance smoother when you need it.',
       sectorManufacturing:
@@ -555,7 +558,7 @@ export const en = {
       sectorOffice:
         'Office-based firms are usually Scope 2-heavy (electricity) with smaller Scope 1 (backup generators, company cars). Country selection drives the grid factor.',
       scienceMethane:
-        'Methane and nitrous oxide also warm the climate, often per unit more than CO₂ over 20 years. Fuel and gas reporting captures part of your direct GHG footprint.',
+        'Methane and nitrous oxide trap far more heat per kilogram than CO₂: about 30 and 273 times more over 100 years (IPCC AR6), and methane around 80 times more over 20 years. Fuel combustion and refrigerant leaks are part of your direct footprint.',
       keelingCurve:
         'Charles Keeling\'s Mauna Loa measurements (from 1958) showed CO₂ rising steadily — one of the clearest global records underpinning modern climate science.',
       ipccScience:
@@ -643,6 +646,7 @@ export const en = {
     scope3Breakdown: 'Scope 3 by category',
     comparisonLabels: {
       total: 'Total',
+      scope12: 'Scope 1 + 2',
       scope1: 'Scope 1',
       scope2: 'Scope 2',
       scope3: 'Scope 3',
@@ -753,12 +757,14 @@ export const en = {
       '1_year': '/year',
     },
     litersPerYear: 'liters/year',
-    gallonsPerYear: 'gallons/year',
+    gallonsPerYear: 'US gal/year',
+    impGallonsPerYear: 'imp gal/year',
     kwhPerYear: 'kWh/year',
     m3PerYear: 'm³/year',
     mwhPerYear: 'MWh/year',
     litersPerMonth: 'liters/month',
-    gallonsPerMonth: 'gallons/month',
+    gallonsPerMonth: 'US gal/month',
+    impGallonsPerMonth: 'imp gal/month',
     kwhPerMonth: 'kWh/month',
     m3PerMonth: 'm³/month',
     mwhPerMonth: 'MWh/month',
@@ -777,16 +783,17 @@ export const en = {
     targets: {
       title: 'Reduction target',
       editTitle: 'Set reduction target',
-      editHint: 'Track progress vs a prior finalized period or your baseline.',
+      editHint: 'Track progress against your base period: the earliest finalized report of the same length.',
       typePercent: '% reduction',
       typeAbsolute: 'Absolute cap (tCO₂e)',
       placeholderPercent: 'e.g. 10',
       placeholderAbsolute: 'e.g. 45.5',
       saveTarget: 'Save target',
       clearTarget: 'Clear target',
-      targetPercent: '{value}% reduction vs prior period',
+      targetPercent: '{value}% reduction vs base period',
       targetAbsolute: 'Cap at {value} tCO₂e',
-      noBaseline: 'No prior finalized period — target uses current total as baseline.',
+      noBaseline: 'No earlier finalized report of the same length — this report is your base period.',
+      basisScope12: 'Compared on Scope 1 + 2 because Scope 3 coverage differs from the base period.',
       noTargetSet: 'No target set. Add one below to see gap-to-target.',
       current: 'Current',
       target: 'Target',
@@ -958,7 +965,7 @@ export const en = {
     ),
     consulting: recommendation(
       'Lead by example with net-zero office operations.',
-      'Digital-first delivery reduces travel-related Scope 1.',
+      'Digital-first delivery reduces business travel (Scope 3).',
       'Help clients set science-based targets using robust inventories.'
     ),
     textile: recommendation(

@@ -1,6 +1,6 @@
 import type { Assessment } from '../types';
 import type { ReductionTarget } from '../types/enterprise';
-import { findPriorFinalizedAssessment } from './assessmentHistory';
+import { comparableTotals, findBaseAssessment, type ComparisonBasis } from './assessmentHistory';
 
 export type TargetGapResult = {
   hasTarget: boolean;
@@ -11,6 +11,8 @@ export type TargetGapResult = {
   gapTco2e: number | null;
   gapPercent: number | null;
   onTrack: boolean | null;
+  /** 'scope12' when Scope 3 coverage differs from the base period. */
+  basis: ComparisonBasis;
 };
 
 export function computeTargetGap(
@@ -33,12 +35,18 @@ export function computeTargetGap(
       gapTco2e: null,
       gapPercent: null,
       onTrack: null,
+      basis: 'total',
     };
   }
 
-  const prior = findPriorFinalizedAssessment(allAssessments, assessment);
-  const baseline = prior?.totalEmissions ?? assessment.totalEmissions;
-  const current = assessment.totalEmissions;
+  // Fixed base period (GHG Protocol / SBTi practice): the earliest finalized report of the same
+  // length, compared like for like on scope coverage.
+  const base = findBaseAssessment(allAssessments, assessment);
+  const totals = base
+    ? comparableTotals(assessment, base)
+    : { current: assessment.totalEmissions, other: assessment.totalEmissions, basis: 'total' as const };
+  const baseline = totals.other;
+  const current = totals.current;
 
   let targetTco2e: number;
   let targetLabel: string;
@@ -60,11 +68,12 @@ export function computeTargetGap(
     hasTarget: true,
     targetLabel,
     currentTco2e: current,
-    baselineTco2e: prior ? baseline : null,
+    baselineTco2e: base ? baseline : null,
     targetTco2e,
     gapTco2e,
     gapPercent,
     onTrack,
+    basis: totals.basis,
   };
 }
 

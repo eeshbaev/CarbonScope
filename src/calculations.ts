@@ -13,6 +13,7 @@ import {
 import { DEFAULT_INDUSTRY, type IndustryKey } from './data/industries';
 import {
   SCOPE3_FIELDS,
+  scope3FactorFor,
   type Scope3CategoryKey,
   type Scope3FieldKey,
 } from './data/scope3Factors';
@@ -148,7 +149,7 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
     const qty = scope3[f.key] ?? 0;
     const base =
       f.unit === 'currency' ? toUsd2022(qty, spendCurrency, scope3.customUsdRate) : qty;
-    const t = (base * f.factor) / 1000;
+    const t = (base * scope3FactorFor(f, countryCode)) / 1000;
     scope3ByField[f.key] = t;
     scope3ByCategory[f.category] += t;
   }

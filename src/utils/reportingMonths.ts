@@ -27,8 +27,8 @@ export function listReportingMonths(
   const months: ReportingMonth[] = [];
 
   for (let i = 0; i < count; i++) {
-    const d = new Date(start);
-    d.setMonth(d.getMonth() + i);
+    // Step from the first of the month so start days 29–31 never skip or repeat a month.
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
     const key = monthKeyFromDate(d);
     const label = d.toLocaleDateString(APP_LOCALE[locale], {
       month: 'short',

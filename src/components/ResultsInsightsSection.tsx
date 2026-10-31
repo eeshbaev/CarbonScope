@@ -119,7 +119,7 @@ export function ResultsInsightsSection({
   const styles = useThemedStyles(createStyles);
   const prior = findPriorFinalizedAssessment(allAssessments, assessment);
   const comparisons = buildComparisonInsights(assessment, prior, locale);
-  const trend = buildCompanyTrend(allAssessments, assessment.companyName, locale);
+  const trend = buildCompanyTrend(allAssessments, assessment.companyName, locale, assessment.reportingPeriod);
   const driver = getLargestEmissionDriver(assessment);
   const benchmark = getBenchmarkMessage(
     t,

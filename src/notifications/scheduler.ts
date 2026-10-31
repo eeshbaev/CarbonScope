@@ -8,6 +8,7 @@ import { getTranslations } from '../i18n';
 import type { Assessment } from '../types';
 import { supportsMonthlyEntry } from '../types/scopeInputs';
 import {
+  addMonthsClamped,
   computeReportingEndDate,
   hasReportingDates,
   parseISODate,
@@ -47,9 +48,7 @@ function addDays(date: Date, days: number): Date {
 }
 
 function addMonths(date: Date, months: number): Date {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + months);
-  return d;
+  return addMonthsClamped(date, months);
 }
 
 function atLocalHour(date: Date, hour: number): Date {

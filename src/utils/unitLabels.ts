@@ -11,6 +11,7 @@ export function unitPeriodLabel(
   const year: Record<DisplayUnit, string> = {
     liters: u.litersPerYear,
     gallons: u.gallonsPerYear,
+    impGallons: u.impGallonsPerYear,
     kwh: u.kwhPerYear,
     m3: u.m3PerYear,
     mwh: u.mwhPerYear,
@@ -22,6 +23,7 @@ export function unitPeriodLabel(
   const month: Record<DisplayUnit, string> = {
     liters: u.litersPerMonth,
     gallons: u.gallonsPerMonth,
+    impGallons: u.impGallonsPerMonth,
     kwh: u.kwhPerMonth,
     m3: u.m3PerMonth,
     mwh: u.mwhPerMonth,

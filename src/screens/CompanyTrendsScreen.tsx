@@ -59,7 +59,7 @@ export function CompanyTrendsScreen({ route }: Props) {
     );
   }
 
-  const trend = buildCompanyTrend(all, assessment.companyName, locale);
+  const trend = buildCompanyTrend(all, assessment.companyName, locale, assessment.reportingPeriod);
   const tco2e = getTco2eLabel(t, assessment.reportingPeriod);
 
   return (

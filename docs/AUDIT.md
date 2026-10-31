@@ -142,7 +142,34 @@ metrics (tCO₂e per employee / revenue / m²).
 * **Two number fields with their own parsing** — the target editor and the custom factor screen
   still use `parseFloat(value.replace(',', '.'))`.
 
-## Suggested order of work
+
+## Status after the fixes (dataset 2026.4)
+
+| Finding | Status |
+|---|---|
+| A1 grid factors were lifecycle | **Fixed** — generation-only factors: official national values (UK, US, IN, AU) or derived from the 2025 generation mix × measured fleet factors; per-country source in `emissionFactors.ts` and `FACTOR_SOURCES.md` |
+| A2 UK factors worldwide | **Partly fixed** — hotel nights now use DESNZ factors for the company country (38 countries, median fallback); UK/US basis of the other factors is stated in the methodology section and hints |
+| A3 AR5 | **Fixed** — AR6 GWP100 for fuels, refrigerants, heat and DESNZ travel/freight rows; CO₂e-only factors keep their published basis (documented) |
+| A4 official files not directly verified | **Open** — needs network access to gov.uk / EPA |
+| B1 gas m³ conversion | **Fixed** — 11.296 kWh/m³ (gross CV) |
+| B2 US gallons only | **Fixed** — US and imperial gallons |
+| B3 biofuels / biogenic CO₂ | Open |
+| B4 flight distance helper | Open |
+| C1 “prior period” could be later | **Fixed** — only earlier reports of the same length |
+| C2 comparisons ignore length / Scope 3 coverage | **Fixed** — same-length reports only; Scope 1 + 2 basis when Scope 3 coverage differs; trends filtered by period length |
+| C3 targets vs previous period | **Fixed** — fixed base period (earliest comparable report), like-for-like basis |
+| C4 fleet EV scenario | **Fixed** — replacement electricity added (12.85 km/L × 0.205 kWh/km) |
+| C5 end date one day late | **Fixed** — inclusive last day shown |
+| C6 month overflow on days 29–31 | **Fixed** — months stepped from the 1st; clamped month arithmetic in duplication and reminders |
+| C7 qualitative benchmarks / no intensity metrics | Open |
+| D organisational boundary, base-year policy, data quality, market-based quality criteria, Scope 3 screening | Open |
+| E educational content | **Fixed** — CSRD after Omnibus I, Scope 2 methods, grid factor article, Kyoto, methane, Paris, Scope 3 coverage, consulting tip, onboarding, reminders, badge wording (all 9 languages) |
+| F tests | **Fixed** — `npm test` (18 unit tests: factors, units, parsing, dates, comparisons, targets, scenarios) |
+| F unused locale files / dead tips pack | **Fixed** — removed |
+| F number parsing | **Fixed** — target editor and custom factor screen use the shared parser |
+| F no export / backup | Open |
+
+## Suggested order of work (original)
 
 1. A1 grid factors (biggest effect on results), with B1 gas m³ in the same release.
 2. C1, C2, C5, C6 — correctness bugs in comparisons and dates, with unit tests.

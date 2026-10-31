@@ -1,5 +1,5 @@
 import { assessmentToDraft } from '../calculations';
-import { monthsForPeriod, parseISODate, toISODateString } from './reportingDates';
+import { computeReportingEndDate } from './reportingDates';
 import { emptyScope1V2, emptyScope2V2, emptyScope3 } from '../types/scopeInputs';
 import type { Assessment, AssessmentDraft } from '../types';
 
@@ -7,14 +7,11 @@ import type { Assessment, AssessmentDraft } from '../types';
 export function duplicateForNextPeriod(source: Assessment): AssessmentDraft {
   const draft = assessmentToDraft(source);
   const period = source.reportingPeriod;
-  const months = monthsForPeriod(period);
 
-  let nextStart = source.reportingStartDate;
-  if (source.reportingStartDate) {
-    const start = parseISODate(source.reportingStartDate);
-    start.setMonth(start.getMonth() + months);
-    nextStart = toISODateString(start);
-  }
+  // The next period starts the day after the previous one ends (its exclusive end date).
+  const nextStart = source.reportingStartDate
+    ? computeReportingEndDate(source.reportingStartDate, period)
+    : source.reportingStartDate;
 
   return {
     id: undefined,

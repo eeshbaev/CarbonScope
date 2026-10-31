@@ -16,6 +16,7 @@ import {
   SCOPE3_CATEGORY_NUMBER,
   SCOPE3_FIELDS,
   getScope3FieldsForCategory,
+  scope3FactorFor,
   type Scope3CategoryKey,
   type Scope3FieldDef,
 } from '../data/scope3Factors';
@@ -65,7 +66,7 @@ export function Scope3Screen({ navigation }: Props) {
     def.unit === 'currency'
       ? t.scope3.spendFactorLine.replace('{factor}', formatAppNumber(def.factor, locale))
       : t.scope3.factorLine
-          .replace('{factor}', formatAppNumber(def.factor, locale))
+          .replace('{factor}', formatAppNumber(scope3FactorFor(def, draft.countryCode), locale))
           .replace('{unit}', t.scope3.units[def.unit]);
 
   const renderFields = (defs: Scope3FieldDef[]) =>

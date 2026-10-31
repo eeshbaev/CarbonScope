@@ -22,19 +22,32 @@ export function monthsForPeriod(period: ReportingPeriod): number {
 }
 
 /**
- * End date of the reporting window: same calendar day, N months after start.
- * e.g. 1 May 2025 + 6 months → 1 November 2025.
+ * Add calendar months without overflowing into the next month
+ * (31 Aug + 6 months → 28/29 Feb, not 3 March).
+ */
+export function addMonthsClamped(date: Date, months: number): Date {
+  const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(date.getDate(), lastDay));
+  target.setHours(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+  return target;
+}
+
+/**
+ * Exclusive end of the reporting window (= start of the next period): same calendar day,
+ * N months after start. e.g. 1 May 2025 + 6 months → 1 November 2025.
  */
 export function computeReportingEndDate(
   startISO: string,
   period: ReportingPeriod
 ): string {
-  const start = parseISODate(startISO);
-  const end = new Date(start);
-  end.setMonth(end.getMonth() + monthsForPeriod(period));
-  if (end.getDate() !== start.getDate()) {
-    end.setDate(0);
-  }
+  return toISODateString(addMonthsClamped(parseISODate(startISO), monthsForPeriod(period)));
+}
+
+/** Last day included in the reporting window, e.g. 1 Jan 2025 (1 year) → 31 Dec 2025. */
+export function computeReportingLastDay(startISO: string, period: ReportingPeriod): string {
+  const end = parseISODate(computeReportingEndDate(startISO, period));
+  end.setDate(end.getDate() - 1);
   return toISODateString(end);
 }
 
@@ -52,7 +65,7 @@ export function formatReportingRange(
   period: ReportingPeriod,
   appLocale: Locale
 ): { start: string; end: string; label: string } {
-  const endISO = computeReportingEndDate(startISO, period);
+  const endISO = computeReportingLastDay(startISO, period);
   const from = formatDisplayDate(startISO, appLocale);
   const to = formatDisplayDate(endISO, appLocale);
   return { start: startISO, end: endISO, label: `${from} – ${to}` };

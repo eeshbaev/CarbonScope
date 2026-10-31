@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { parseNumberInput } from '../utils/parseNumberInput';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from './Button';
 import { useLanguage } from '../context/LanguageContext';
@@ -23,7 +24,7 @@ export function TargetEditorPanel({ assessment, onSave }: Props) {
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    const num = parseFloat(value.replace(',', '.'));
+    const num = parseNumberInput(value);
     const target: ReductionTarget = { type, value: num };
     if (!isValidReductionTarget(target)) return;
     setSaving(true);

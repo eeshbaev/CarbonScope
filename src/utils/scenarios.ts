@@ -1,4 +1,6 @@
 import { computeEmissions } from '../calculations';
+import { HEAT_FACTORS } from '../data/fuelFactors';
+import { resolveCategoryTotal } from './scopeFieldInputs';
 import type { Assessment } from '../types';
 
 export type ScenarioAdjustments = {
@@ -34,12 +36,35 @@ function scaleCategory<T extends { total: number; monthly: Record<string, number
   };
 }
 
-/** Petrol reduction from fleet EV shift (portion of petrol). */
-function applyFleetEv(scope1: Assessment['scope1'], fleetEvPct: number) {
-  const petrolReduction = -fleetEvPct;
+/** Add an amount to a category, spreading it evenly over months when monthly entry is used. */
+function addToCategory<T extends { useMonthly: boolean; total: number; monthly: Record<string, number> }>(
+  input: T,
+  amount: number
+): T {
+  const keys = Object.keys(input.monthly);
+  if (input.useMonthly && keys.length > 0) {
+    const monthly: Record<string, number> = {};
+    for (const k of keys) monthly[k] = (input.monthly[k] ?? 0) + amount / keys.length;
+    return { ...input, monthly };
+  }
+  return { ...input, total: input.total + amount };
+}
+
+/**
+ * Fleet EV shift: X% of petrol is replaced by battery EVs. The petrol litres removed are turned
+ * into km driven, and the same km are added back as grid electricity (charged on site).
+ */
+function applyFleetEv(
+  scope1: Assessment['scope1'],
+  scope2: Assessment['scope2'],
+  fleetEvPct: number
+): { scope1: Assessment['scope1']; scope2: Assessment['scope2'] } {
+  const share = Math.min(Math.max(fleetEvPct, 0), 100) / 100;
+  const litresRemoved = resolveCategoryTotal(scope1.petrol) * share;
+  const evKwh = litresRemoved * HEAT_FACTORS.petrolCarKmPerLitre * HEAT_FACTORS.evKwhPerKm;
   return {
-    ...scope1,
-    petrol: scaleCategory(scope1.petrol, petrolReduction),
+    scope1: { ...scope1, petrol: scaleCategory(scope1.petrol, -fleetEvPct) },
+    scope2: { ...scope2, electricity: addToCategory(scope2.electricity, evKwh) },
   };
 }
 
@@ -53,14 +78,15 @@ export function computeScenarioTotals(
     petrol: scaleCategory(assessment.scope1.petrol, adj.petrolPct),
     naturalGas: scaleCategory(assessment.scope1.naturalGas, adj.gasPct),
   };
-  if (adj.fleetEvPct > 0) {
-    scope1Inputs = applyFleetEv(scope1Inputs, adj.fleetEvPct);
-  }
-
-  const scope2Inputs: Assessment['scope2'] = {
+  let scope2Inputs: Assessment['scope2'] = {
     ...assessment.scope2,
     electricity: scaleCategory(assessment.scope2.electricity, adj.electricityPct),
   };
+  if (adj.fleetEvPct > 0) {
+    const shifted = applyFleetEv(scope1Inputs, scope2Inputs, adj.fleetEvPct);
+    scope1Inputs = shifted.scope1;
+    scope2Inputs = shifted.scope2;
+  }
 
   // Same grid factor as the saved report unless the user models a different one.
   const e = computeEmissions({

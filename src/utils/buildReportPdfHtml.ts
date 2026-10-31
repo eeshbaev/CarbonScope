@@ -28,6 +28,7 @@ import {
   SCOPE3_CATEGORY_NUMBER,
   SCOPE3_FACTOR_SOURCES,
   SCOPE3_FIELDS,
+  scope3FactorFor,
 } from '../data/scope3Factors';
 import { formatAppDateTime, formatAppNumber } from './appLocale';
 import { formatCategoryLabel } from '../data/categoryEmblems';
@@ -192,7 +193,7 @@ export function buildReportPdfHtml(
                     f.unit === 'currency'
                       ? t.scope3.spendFactorLine.replace('{factor}', formatAppNumber(f.factor, locale))
                       : t.scope3.factorLine
-                          .replace('{factor}', formatAppNumber(f.factor, locale))
+                          .replace('{factor}', formatAppNumber(scope3FactorFor(f, assessment.countryCode), locale))
                           .replace('{unit}', t.scope3.units[f.unit])
                   }`
               )

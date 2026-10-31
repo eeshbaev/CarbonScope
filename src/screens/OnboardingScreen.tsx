@@ -55,6 +55,7 @@ export function OnboardingScreen({ navigation }: Props) {
 
         <Section icon="🏭" title={t.onboarding.scope1Title} body={t.onboarding.scope1Body} styles={styles} />
         <Section icon="⚡" title={t.onboarding.scope2Title} body={t.onboarding.scope2Body} styles={styles} />
+        <Section icon="🔗" title={t.onboarding.scope3Title} body={t.onboarding.scope3Body} styles={styles} />
         <Section icon="🌱" title={t.onboarding.whyTitle} body={t.onboarding.whyBody} styles={styles} />
 
         <Button title={t.common.letsStart} onPress={handleStart} style={styles.button} />

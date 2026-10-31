@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { parseNumberInput } from '../utils/parseNumberInput';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -71,7 +72,7 @@ export function EmissionFactorsScreen({ navigation }: Props) {
 
   const saveEdit = async () => {
     if (!editCode) return;
-    const n = parseFloat(editValue.replace(',', '.'));
+    const n = parseNumberInput(editValue);
     if (!Number.isFinite(n) || n <= 0) {
       Alert.alert(t.settings.factorInvalid);
       return;
