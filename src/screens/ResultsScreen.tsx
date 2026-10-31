@@ -17,7 +17,8 @@ import { ScenarioPanel } from '../components/ScenarioPanel';
 import { TargetEditorPanel } from '../components/TargetEditorPanel';
 import { TargetProgressCard } from '../components/TargetProgressCard';
 import { NotificationPermissionModal } from '../components/NotificationPermissionModal';
-import { RateAppModal } from '../components/RateAppModal';
+import { onValueMoment } from '../rating/ratingService';
+import { findPriorFinalizedAssessment } from '../utils/assessmentHistory';
 import { SavedToast } from '../components/SavedToast';
 import { Button } from '../components/Button';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -41,11 +42,7 @@ import {
   getAssessmentById,
   loadAssessments,
   saveAssessment,
-  incrementDeletesCount,
   setPendingDeletedFeedback,
-  markRatingFeedbackProvided,
-  setRatePromptStatus,
-  shouldShowRatePrompt,
 } from '../storage';
 import {
   enableNotifications,
@@ -53,8 +50,6 @@ import {
   syncScheduledNotifications,
 } from '../notifications/notificationService';
 import { markPermissionPromptShown } from '../notifications/notificationStorage';
-import { shouldPromptRateForDeleteCount } from '../utils/ratePromptTriggers';
-import { requestInAppReview } from '../utils/appReview';
 import { generateAndShareReportPdf, showPdfError } from '../utils/reportPdf';
 import type { Assessment } from '../types';
 import type { InitiativeKey } from '../data/initiatives';
@@ -78,7 +73,6 @@ export function ResultsScreen({ navigation, route }: Props) {
   const [saved, setSaved] = useState<Assessment | null>(null);
   const [allAssessments, setAllAssessments] = useState<Assessment[]>([]);
   const [loadState, setLoadState] = useState<LoadState>('loading');
-  const [rateVisible, setRateVisible] = useState(false);
   const [notifPromptVisible, setNotifPromptVisible] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -150,25 +144,15 @@ export function ResultsScreen({ navigation, route }: Props) {
     }
   }, [loadState, navigation]);
 
+  // Rating policy: a finalized report that shows a comparison with an earlier period is a
+  // value moment (repeated, successful use). Recorded once per opened report.
   useEffect(() => {
     if (loadState !== 'ready' || !saved || rateChecked.current) return;
-    if (route.params?.assessmentId || !route.params?.promptRate) return;
-
+    if (saved.isDraft || !saved.finalizedAt) return;
+    if (!findPriorFinalizedAssessment(allAssessments, saved)) return;
     rateChecked.current = true;
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    shouldShowRatePrompt().then((show) => {
-      if (!cancelled && show) {
-        timer = setTimeout(() => setRateVisible(true), 600);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [loadState, saved, route.params?.assessmentId, route.params?.promptRate]);
+    void onValueMoment('comparison_seen');
+  }, [loadState, saved, allAssessments]);
 
   useEffect(() => {
     if (loadState !== 'ready' || !route.params?.promptNotifications) return;
@@ -185,21 +169,6 @@ export function ResultsScreen({ navigation, route }: Props) {
   const handleDismissNotifications = async () => {
     setNotifPromptVisible(false);
     await markPermissionPromptShown();
-  };
-
-  const handleRate = async () => {
-    setRateVisible(false);
-    await markRatingFeedbackProvided();
-    await requestInAppReview();
-  };
-
-  const handleRateLater = async () => {
-    setRateVisible(false);
-    await setRatePromptStatus('later');
-  };
-
-  const handleRateDismiss = async () => {
-    setRateVisible(false);
   };
 
   const assessment = saved;
@@ -330,6 +299,9 @@ export function ResultsScreen({ navigation, route }: Props) {
       await generateAndShareReportPdf(assessment, t, locale);
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
         window.alert(`${t.results.generatePdf}\n\n${t.results.pdfWebHint}`);
+      } else if (!assessment.isDraft) {
+        // Value moment: the report was shared and the share sheet has closed.
+        void onValueMoment('report_shared');
       }
     } catch (err) {
       console.error('PDF export failed', err);
@@ -344,12 +316,11 @@ export function ResultsScreen({ navigation, route }: Props) {
     setDeleting(true);
     try {
       const snapshot = { ...assessment };
-      const deleteCount = await incrementDeletesCount();
       await deleteAssessment(assessment.id);
       await onAssessmentDeleted(locale, assessment.id);
       await setPendingDeletedFeedback({
         assessment: snapshot,
-        promptRate: shouldPromptRateForDeleteCount(deleteCount),
+        promptRate: false, // never ask for a rating after a delete
       });
       startNew();
       setDeleteConfirmVisible(false);
@@ -444,18 +415,6 @@ export function ResultsScreen({ navigation, route }: Props) {
         onCancel={() => {
           if (!deleting) setDeleteConfirmVisible(false);
         }}
-      />
-
-      <RateAppModal
-        visible={rateVisible}
-        title={t.rateApp.title}
-        message={t.rateApp.message}
-        rateLabel={t.rateApp.rateNow}
-        laterLabel={t.rateApp.maybeLater}
-        dismissLabel={t.rateApp.noThanks}
-        onRate={handleRate}
-        onLater={handleRateLater}
-        onDismiss={handleRateDismiss}
       />
 
       <NotificationPermissionModal

@@ -8,6 +8,9 @@ import type { TranslationKeys } from '../locales/en';
 export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   ru: {
     settings: {
+      sendFeedback: 'Что нам улучшить?',
+      feedbackSubject: 'Отзыв о CarbonScope',
+      feedbackPrompt: 'Что нам улучшить?',
       recalcAllTitle: 'Обновить отчёты до последних коэффициентов',
       recalcAllHint: 'Пересчитывает сохранённые отчёты по текущим наборам коэффициентов ({version}), чтобы сравнения и цели опирались на одну методологию. Каждый финальный отчёт сохраняет запись о прежнем результате.',
       recalcAllOutdated: 'Отчётов со старыми коэффициентами: {count}.',
@@ -62,6 +65,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   fr: {
     settings: {
+      sendFeedback: 'Que pourrions-nous améliorer ?',
+      feedbackSubject: 'Avis sur CarbonScope',
+      feedbackPrompt: 'Que pourrions-nous améliorer ?',
       recalcAllTitle: 'Mettre les rapports à jour avec les derniers facteurs',
       recalcAllHint: 'Recalcule les rapports enregistrés avec les jeux de facteurs actuels ({version}) afin que comparaisons et objectifs reposent sur une seule méthode. Chaque rapport finalisé conserve une note de son résultat précédent.',
       recalcAllOutdated: '{count} rapports utilisent d’anciens facteurs.',
@@ -116,6 +122,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   de: {
     settings: {
+      sendFeedback: 'Was können wir verbessern?',
+      feedbackSubject: 'Feedback zu CarbonScope',
+      feedbackPrompt: 'Was können wir verbessern?',
       recalcAllTitle: 'Berichte auf die neuesten Faktoren aktualisieren',
       recalcAllHint: 'Berechnet gespeicherte Berichte mit den aktuellen Faktordatensätzen ({version}) neu, damit Vergleiche und Ziele auf einer Methodik beruhen. Jeder abgeschlossene Bericht behält einen Hinweis auf sein vorheriges Ergebnis.',
       recalcAllOutdated: '{count} Berichte verwenden ältere Faktoren.',
@@ -170,6 +179,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   it: {
     settings: {
+      sendFeedback: 'Cosa potremmo migliorare?',
+      feedbackSubject: 'Feedback su CarbonScope',
+      feedbackPrompt: 'Cosa potremmo migliorare?',
       recalcAllTitle: 'Aggiorna i report agli ultimi fattori',
       recalcAllHint: 'Ricalcola i report salvati con i dataset di fattori attuali ({version}) così confronti e obiettivi usano un’unica metodologia. Ogni report finalizzato conserva una nota del risultato precedente.',
       recalcAllOutdated: '{count} report usano fattori meno recenti.',
@@ -224,6 +236,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   ja: {
     settings: {
+      sendFeedback: '改善してほしい点は？',
+      feedbackSubject: 'CarbonScope へのフィードバック',
+      feedbackPrompt: '改善してほしい点は？',
       recalcAllTitle: '報告を最新の係数に更新',
       recalcAllHint: '保存済みの報告を現在の係数データセット（{version}）で再計算し、比較や目標を同じ方法論にそろえます。確定済みの各報告には以前の結果が記録されます。',
       recalcAllOutdated: '古い係数を使っている報告：{count} 件',
@@ -278,6 +293,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   zh: {
     settings: {
+      sendFeedback: '我们可以改进什么？',
+      feedbackSubject: 'CarbonScope 反馈',
+      feedbackPrompt: '我们可以改进什么？',
       recalcAllTitle: '将报告更新为最新因子',
       recalcAllHint: '使用当前因子数据集（{version}）重新计算已保存的报告，使比较和目标基于同一方法。每份已定稿报告都会保留其先前结果的说明。',
       recalcAllOutdated: '{count} 份报告使用旧因子。',
@@ -332,6 +350,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   es: {
     settings: {
+      sendFeedback: '¿Qué podríamos mejorar?',
+      feedbackSubject: 'Comentarios sobre CarbonScope',
+      feedbackPrompt: '¿Qué podríamos mejorar?',
       recalcAllTitle: 'Actualizar los informes a los últimos factores',
       recalcAllHint: 'Recalcula los informes guardados con los conjuntos de factores actuales ({version}) para que comparaciones y objetivos usen una sola metodología. Cada informe finalizado conserva una nota de su resultado anterior.',
       recalcAllOutdated: '{count} informes usan factores anteriores.',
@@ -386,6 +407,9 @@ export const METHODOLOGY_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
   },
   pt: {
     settings: {
+      sendFeedback: 'O que podemos melhorar?',
+      feedbackSubject: 'Feedback sobre o CarbonScope',
+      feedbackPrompt: 'O que podemos melhorar?',
       recalcAllTitle: 'Atualizar relatórios para os fatores mais recentes',
       recalcAllHint: 'Recalcula os relatórios salvos com os conjuntos de fatores atuais ({version}) para que comparações e metas usem uma só metodologia. Cada relatório finalizado mantém uma nota do resultado anterior.',
       recalcAllOutdated: '{count} relatórios usam fatores antigos.',

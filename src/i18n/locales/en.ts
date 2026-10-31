@@ -66,6 +66,9 @@ export const en = {
     fuelFactorsVersion: 'Dataset {version} · reference year {year} · {gwp}',
     fuelFactorsSplit: 'CO₂ {co2} + CH₄ {ch4} + N₂O {n2o}',
     gridFactorsTitle: 'Grid electricity by country (Scope 2, location-based)',
+    sendFeedback: 'What could we improve?',
+    feedbackSubject: 'CarbonScope feedback',
+    feedbackPrompt: 'What could we improve?',
     recalcAllTitle: 'Update reports to the latest factors',
     recalcAllHint:
       'Recalculates saved reports with the current factor datasets ({version}) so comparisons and targets use one methodology. Each finalized report keeps a note of its previous result.',

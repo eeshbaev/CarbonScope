@@ -1,32 +1,12 @@
-import { useCallback, useRef, useState } from 'react';
-import { markRatingFeedbackProvided, setRatePromptStatus, shouldShowRatePrompt } from '../storage';
-import { requestInAppReview } from '../utils/appReview';
+import { useCallback, useRef } from 'react';
 
 const GHOST_VISIBLE_MS = 1600;
-const RATE_DELAY_AFTER_GHOST_MS = 350;
 
 export function useRateAppPrompt() {
-  const [visible, setVisible] = useState(false);
   const flowId = useRef(0);
 
-  const handleRate = useCallback(async () => {
-    setVisible(false);
-    await markRatingFeedbackProvided();
-    await requestInAppReview();
-  }, []);
-
-  const handleLater = useCallback(async () => {
-    setVisible(false);
-    await setRatePromptStatus('later');
-  }, []);
-
-  const handleDismiss = useCallback(async () => {
-    setVisible(false);
-  }, []);
-
   /**
-   * Shows deleted ghost, then rate modal on 8th / 12th / 18th delete when eligible.
-   * Returns whether the rate modal was shown.
+   * Shows the deleted ghost card briefly, then clears it.
    */
   const runDeleteFeedbackFlow = useCallback(
     async (shouldPromptForCount: boolean, onClearGhost: () => void): Promise<boolean> => {
@@ -35,14 +15,8 @@ export function useRateAppPrompt() {
       await new Promise((resolve) => setTimeout(resolve, GHOST_VISIBLE_MS));
       if (flowId.current !== id) return false;
 
-      const eligible = shouldPromptForCount && (await shouldShowRatePrompt());
-      if (eligible) {
-        await new Promise((resolve) => setTimeout(resolve, RATE_DELAY_AFTER_GHOST_MS));
-        if (flowId.current !== id) return false;
-        setVisible(true);
-        return true;
-      }
-
+      // Rating requests are never tied to deletes (see rating/ratingPolicy.ts).
+      void shouldPromptForCount;
       onClearGhost();
       return false;
     },
@@ -54,10 +28,6 @@ export function useRateAppPrompt() {
   }, []);
 
   return {
-    visible,
-    handleRate,
-    handleLater,
-    handleDismiss,
     runDeleteFeedbackFlow,
     cancelPendingFlows,
   };

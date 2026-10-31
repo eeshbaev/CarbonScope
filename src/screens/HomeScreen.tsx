@@ -11,7 +11,6 @@ import { InsightOfWeekCard } from '../components/InsightOfWeekCard';
 import { InsightDetailModal } from '../components/InsightDetailModal';
 import type { EducationalTipKey } from '../notifications/educationalTips';
 import { QuickEmissionsEditModal } from '../components/QuickEmissionsEditModal';
-import { RateAppModal } from '../components/RateAppModal';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { SwipeableCompanyCard } from '../components/SwipeableCompanyCard';
 import { useAssessment } from '../context/AssessmentContext';
@@ -23,11 +22,9 @@ import {
   consumePendingDeletedFeedback,
   deleteAssessment,
   getAssessmentById,
-  incrementDeletesCount,
   loadAssessments,
 } from '../storage';
 import type { Assessment } from '../types';
-import { shouldPromptRateForDeleteCount } from '../utils/ratePromptTriggers';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors } from '../theme';
 import { scaleFontSize, scaleSize } from '../theme/scale';
@@ -49,10 +46,6 @@ export function HomeScreen({ navigation }: Props) {
   const clearGhost = useCallback(() => setRecentlyDeleted(null), []);
 
   const {
-    visible: rateVisible,
-    handleRate,
-    handleLater,
-    handleDismiss,
     runDeleteFeedbackFlow,
     cancelPendingFlows,
   } = useRateAppPrompt();
@@ -95,7 +88,8 @@ export function HomeScreen({ navigation }: Props) {
         if (cancelled || !pending) return;
 
         setAssessments((prev) => prev.filter((a) => a.id !== pending.assessment.id));
-        startDeleteFeedback(pending.assessment, pending.promptRate);
+        // Never ask for a rating after a delete (rating policy).
+        startDeleteFeedback(pending.assessment, false);
       };
 
       void run();
@@ -127,10 +121,9 @@ export function HomeScreen({ navigation }: Props) {
 
     await deleteAssessment(item.id);
     await onAssessmentDeleted(locale, item.id);
-    const deleteCount = await incrementDeletesCount();
 
     setAssessments((prev) => prev.filter((a) => a.id !== item.id));
-    startDeleteFeedback(item, shouldPromptRateForDeleteCount(deleteCount));
+    startDeleteFeedback(item, false);
 
     void reloadAssessments();
   };
@@ -218,17 +211,6 @@ export function HomeScreen({ navigation }: Props) {
         title={insightTitle}
         body={insightBody}
         onClose={() => setInsightVisible(false)}
-      />
-      <RateAppModal
-        visible={rateVisible}
-        title={t.rateApp.title}
-        message={t.rateApp.message}
-        rateLabel={t.rateApp.rateNow}
-        laterLabel={t.rateApp.maybeLater}
-        dismissLabel={t.rateApp.noThanks}
-        onRate={wrapClearGhost(handleRate)}
-        onLater={wrapClearGhost(handleLater)}
-        onDismiss={wrapClearGhost(handleDismiss)}
       />
       <QuickEmissionsEditModal
         visible={!!quickEditAssessment}

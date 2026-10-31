@@ -10,7 +10,6 @@ import {
   wasPermissionPromptShown,
 } from '../notifications/notificationStorage';
 import { incrementCompaniesCreatedCount } from '../storage';
-import { shouldPromptRateForCompanyCount } from '../utils/ratePromptTriggers';
 
 /** Finalize the current draft and open Results (shared by the last input step). */
 export function useCalculateResults(navigation: NavigationProp<RootStackParamList>) {
@@ -31,11 +30,7 @@ export function useCalculateResults(navigation: NavigationProp<RootStackParamLis
         // Notification sync is best-effort; assessment is already saved.
       }
 
-      let promptRate = false;
-      if (isNewCompany) {
-        const createdCount = await incrementCompaniesCreatedCount();
-        promptRate = shouldPromptRateForCompanyCount(createdCount);
-      }
+      if (isNewCompany) await incrementCompaniesCreatedCount();
 
       let promptNotifications = false;
       try {
@@ -46,7 +41,6 @@ export function useCalculateResults(navigation: NavigationProp<RootStackParamLis
 
       navigation.navigate('Results', {
         assessmentId: assessment.id,
-        promptRate,
         promptNotifications,
       });
     } catch {

@@ -20,6 +20,9 @@ import {
 import type { NotificationPrefs } from '../notifications/types';
 import { clearAllAppData } from '../storage';
 import { requestInAppReview } from '../utils/appReview';
+import { markRatedByUser } from '../rating/ratingService';
+import { STORE_CONFIG } from '../constants/store';
+import * as Linking from 'expo-linking';
 import { colors, radii } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
@@ -78,7 +81,16 @@ export function SettingsScreen({ navigation }: Props) {
   };
 
   const handleRateApp = async () => {
+    await markRatedByUser();
     await requestInAppReview();
+  };
+
+  const handleSendFeedback = async () => {
+    const subject = encodeURIComponent(t.settings.feedbackSubject);
+    const body = encodeURIComponent(`${t.settings.feedbackPrompt}\n\n`);
+    await Linking.openURL(`mailto:${STORE_CONFIG.supportEmail}?subject=${subject}&body=${body}`).catch(
+      () => undefined
+    );
   };
 
   const handleClearAll = async () => {
@@ -148,6 +160,7 @@ export function SettingsScreen({ navigation }: Props) {
       <Text style={[styles.section, styles.sectionSpaced]}>{t.settings.aboutSection}</Text>
       <View style={styles.list}>
         <SettingsRow label={t.settings.rateApp} onPress={handleRateApp} styles={styles} />
+        <SettingsRow label={t.settings.sendFeedback} onPress={handleSendFeedback} styles={styles} />
         <SettingsRow
           label={t.settings.privacyPolicy}
           onPress={() => navigation.navigate('PrivacyPolicy')}
