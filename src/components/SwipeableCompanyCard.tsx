@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Trash } from 'lucide-react-native';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { CompanyCard } from './CompanyCard';
@@ -45,7 +46,7 @@ export function SwipeableCompanyCard({
           }}
         >
           <Animated.View style={[styles.deleteInner, { transform: [{ scale }] }]}>
-            <Text style={styles.trash}>🗑</Text>
+            <Trash size={20} color={colors.white} strokeWidth={1.75} />
             <Text style={styles.deleteText}>{deleteLabel}</Text>
           </Animated.View>
         </Pressable>

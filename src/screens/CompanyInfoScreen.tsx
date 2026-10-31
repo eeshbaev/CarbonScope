@@ -71,7 +71,6 @@ export function CompanyInfoScreen({ navigation }: Props) {
   return (
     <ScreenLayout
       title={t.company.title}
-      titleIcon="🏢"
       subtitle={t.company.subtitle}
     >
       <Input

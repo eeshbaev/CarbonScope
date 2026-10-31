@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, type StyleProp, type TextStyle } from 'react-native';
-import { getCategoryEmblem, type EmissionCategoryKey } from '../data/categoryEmblems';
+import type { EmissionCategoryKey } from '../data/categoryEmblems';
+import { CategoryIcon } from '../design/CategoryIcon';
 import { scaleFontSize } from '../theme/scale';
 import { useAccessibility } from '../context/AccessibilityContext';
 
@@ -11,22 +12,15 @@ type Props = {
   numberOfLines?: number;
 };
 
-/** Category name with a leading emblem (fuel, gas, electricity). */
-export function CategoryLabel({
-  category,
-  label,
-  style,
-  emblemSize,
-  numberOfLines,
-}: Props) {
+/** Source name with its line icon. */
+export function CategoryLabel({ category, label, style, emblemSize, numberOfLines }: Props) {
   const { fontScale } = useAccessibility();
   const iconSize = emblemSize ?? scaleFontSize(18, fontScale);
+  const color = StyleSheet.flatten(style)?.color;
 
   return (
     <View style={styles.row}>
-      <Text style={[styles.emblem, { fontSize: iconSize, lineHeight: iconSize * 1.2 }]}>
-        {getCategoryEmblem(category)}
-      </Text>
+      <CategoryIcon category={category} size={iconSize} color={typeof color === 'string' ? color : undefined} />
       <Text style={[styles.label, style]} numberOfLines={numberOfLines}>
         {label}
       </Text>
@@ -40,9 +34,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexShrink: 1,
     gap: 8,
-  },
-  emblem: {
-    textAlign: 'center',
   },
   label: {
     flexShrink: 1,

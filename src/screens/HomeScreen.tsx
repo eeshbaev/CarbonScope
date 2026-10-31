@@ -1,4 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { Settings } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -142,7 +143,7 @@ export function HomeScreen({ navigation }: Props) {
             hitSlop={16}
             accessibilityLabel={t.common.settings}
           >
-            <Text style={styles.settingsIcon}>⚙</Text>
+            <Settings size={24} color={colors.inkSecondary} strokeWidth={1.75} />
           </Pressable>
         </View>
         <HomeHero showBackdrop />

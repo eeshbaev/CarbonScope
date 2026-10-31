@@ -4,11 +4,14 @@ export type DisplaySizePreference = 'compact' | 'default' | 'comfortable' | 'lar
 export interface AccessibilityPrefs {
   fontSize: FontSizePreference;
   displaySize: DisplaySizePreference;
+  /** In-app “Reduce motion”, applied in addition to the OS setting. */
+  reduceMotion: boolean;
 }
 
 export const DEFAULT_ACCESSIBILITY_PREFS: AccessibilityPrefs = {
   fontSize: 'default',
   displaySize: 'default',
+  reduceMotion: false,
 };
 
 const FONT_SCALE: Record<FontSizePreference, number> = {

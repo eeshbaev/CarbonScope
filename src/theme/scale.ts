@@ -4,7 +4,7 @@ export const BASE_TYPOGRAPHY = {
   title: { fontSize: 28, fontWeight: '700' as const, color: colors.text },
   subtitle: { fontSize: 18, fontWeight: '600' as const, color: colors.text },
   body: { fontSize: 16, fontWeight: '400' as const, color: colors.text },
-  caption: { fontSize: 13, fontWeight: '400' as const, color: colors.textSecondary },
+  caption: { fontSize: 13, fontWeight: '400' as const, color: colors.inkTertiary },
   label: { fontSize: 14, fontWeight: '600' as const, color: colors.text },
 };
 

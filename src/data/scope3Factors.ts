@@ -60,7 +60,6 @@ export interface Scope3FieldDef {
   unit: Scope3Unit;
   /** kg CO₂e per unit (per USD for unit 'currency'). */
   factor: number;
-  emblem: string;
 }
 
 export const SCOPE3_ACTIVITY_DATASET_VERSION = '2026.4';
@@ -87,55 +86,54 @@ export const SCOPE3_CATEGORIES: Scope3CategoryKey[] = [
 export const SCOPE3_FIELDS: Scope3FieldDef[] = [
   // Category 1 — Purchased goods & services. Spend: EPA v1.3, kg CO₂e per 2022 USD with margins.
   // NAICS 322230 Stationery product manufacturing
-  { key: 'spendOfficeSupplies', category: 'cat1Purchased', unit: 'currency', factor: 0.296, emblem: '📎' },
+  { key: 'spendOfficeSupplies', category: 'cat1Purchased', unit: 'currency', factor: 0.296 },
   // NAICS 334111 Electronic computer manufacturing
-  { key: 'spendItHardware', category: 'cat1Purchased', unit: 'currency', factor: 0.058, emblem: '💻' },
+  { key: 'spendItHardware', category: 'cat1Purchased', unit: 'currency', factor: 0.058 },
   // Mean of NAICS 541110 Lawyers (0.041), 541512 Computer systems design (0.089),
   // 541611 Management consulting (0.078)
-  { key: 'spendServices', category: 'cat1Purchased', unit: 'currency', factor: 0.069, emblem: '💼' },
+  { key: 'spendServices', category: 'cat1Purchased', unit: 'currency', factor: 0.069 },
   // NAICS 722310 Food service contractors
-  { key: 'spendFoodCatering', category: 'cat1Purchased', unit: 'currency', factor: 0.132, emblem: '🍽️' },
+  { key: 'spendFoodCatering', category: 'cat1Purchased', unit: 'currency', factor: 0.132 },
   // NAICS 236220 Commercial and institutional building construction
-  { key: 'spendConstruction', category: 'cat1Purchased', unit: 'currency', factor: 0.224, emblem: '🧱' },
+  { key: 'spendConstruction', category: 'cat1Purchased', unit: 'currency', factor: 0.224 },
   // DESNZ Water supply 0.1913 + Water treatment 0.17088 (assumes water used is returned to sewer)
-  { key: 'waterM3', category: 'cat1Purchased', unit: 'm3', factor: 0.36218, emblem: '💧' },
+  { key: 'waterM3', category: 'cat1Purchased', unit: 'm3', factor: 0.36218 },
   // Category 4 — Upstream transportation & distribution (DESNZ Freighting goods)
   // HGV (all diesel), average non-refrigerated HGV, average laden
-  { key: 'freightRoadTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.10361, emblem: '🚚' },
+  { key: 'freightRoadTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.10361 },
   // Rail › Freight train
-  { key: 'freightRailTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.02584, emblem: '🚂' },
+  { key: 'freightRailTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.02584 },
   // Cargo ship › Container ship › Average
-  { key: 'freightSeaTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.01613, emblem: '🚢' },
+  { key: 'freightSeaTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.01613 },
   // Freight flights › Long-haul, to/from UK › With RF
-  { key: 'freightAirTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.89957, emblem: '🛩️' },
+  { key: 'freightAirTkm', category: 'cat4Transport', unit: 'tonneKm', factor: 0.89957 },
   // Category 5 — Waste generated in operations (DESNZ Waste disposal › Commercial and industrial waste)
-  { key: 'wasteLandfillTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 520.58023, emblem: '🗑️' },
+  { key: 'wasteLandfillTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 520.58023 },
   // Closed-loop recycling
-  { key: 'wasteRecycledTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 4.65358, emblem: '♻️' },
+  { key: 'wasteRecycledTonnes', category: 'cat5Waste', unit: 'tonnes', factor: 4.65358 },
   // Category 6 — Business travel
   // Flights › Short-haul, to/from UK › Average passenger › With RF
-  { key: 'flightShortHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.12789, emblem: '✈️' },
+  { key: 'flightShortHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.12789 },
   // Flights › Long-haul, to/from UK › Average passenger › With RF
-  { key: 'flightLongHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.15286, emblem: '🌍' },
+  { key: 'flightLongHaulKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.15286 },
   // Rail › National rail
-  { key: 'railKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.03093, emblem: '🚆' },
+  { key: 'railKm', category: 'cat6Travel', unit: 'passengerKm', factor: 0.03093 },
   // Passenger vehicles › Cars (by size) › Average car › Unknown fuel
-  { key: 'carKm', category: 'cat6Travel', unit: 'km', factor: 0.16595, emblem: '🚙' },
+  { key: 'carKm', category: 'cat6Travel', unit: 'km', factor: 0.16595 },
   // Hotel stay › by country (see HOTEL_NIGHT_FACTORS); 10.4 = UK, used only as a placeholder
-  { key: 'hotelNights', category: 'cat6Travel', unit: 'roomNights', factor: 10.4, emblem: '🏨' },
+  { key: 'hotelNights', category: 'cat6Travel', unit: 'roomNights', factor: 10.4 },
   // Category 7 — Employee commuting
   // Average car › Unknown fuel
-  { key: 'commuteCarKm', category: 'cat7Commuting', unit: 'km', factor: 0.16595, emblem: '🚘' },
+  { key: 'commuteCarKm', category: 'cat7Commuting', unit: 'km', factor: 0.16595 },
   // Bus › Average local bus
   {
     key: 'commutePublicTransportKm',
     category: 'cat7Commuting',
     unit: 'passengerKm',
     factor: 0.10153,
-    emblem: '🚌',
   },
   // Rail › National rail
-  { key: 'commuteRailKm', category: 'cat7Commuting', unit: 'passengerKm', factor: 0.03093, emblem: '🚇' },
+  { key: 'commuteRailKm', category: 'cat7Commuting', unit: 'passengerKm', factor: 0.03093 },
 ];
 
 export const SCOPE3_FACTOR_SOURCES =

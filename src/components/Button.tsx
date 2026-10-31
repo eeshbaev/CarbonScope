@@ -1,20 +1,20 @@
 import {
   ActivityIndicator,
-  Platform,
-  Pressable,
   StyleSheet,
   Text,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { PressableScale } from '../design/Pressable';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors, radii } from '../theme';
 import { scaleFontSize, scaleSize } from '../theme/scale';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'destructive';
+  /** primary = filled brand · secondary = tonal · outline = hairline · quiet = text only. */
+  variant?: 'primary' | 'secondary' | 'outline' | 'destructive' | 'quiet';
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -33,20 +33,18 @@ export function Button({
   const isDestructive = variant === 'destructive';
 
   return (
-    <Pressable
-      android_ripple={
-        Platform.OS === 'android'
-          ? { color: isOutline || isDestructive ? 'rgba(45, 106, 79, 0.12)' : 'rgba(255,255,255,0.2)' }
-          : undefined
-      }
-      style={({ pressed }) => [
+    <PressableScale
+      haptic={isPrimary ? 'light' : 'none'}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }}
+      style={[
         styles.base,
         isPrimary && styles.primary,
         variant === 'secondary' && styles.secondary,
         isOutline && styles.outline,
         isDestructive && styles.destructive,
+        variant === 'quiet' && styles.quiet,
         (disabled || loading) && styles.disabled,
-        pressed && !disabled && styles.pressed,
         style,
       ]}
       disabled={disabled || loading}
@@ -61,12 +59,14 @@ export function Button({
             isPrimary && styles.textPrimary,
             variant === 'secondary' && styles.textSecondary,
             isOutline && styles.textOutline,
+            variant === 'quiet' && styles.textOutline,
+            isDestructive && styles.textPrimary,
           ]}
         >
           {title}
         </Text>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -80,6 +80,11 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
       justifyContent: 'center',
       minHeight: scaleSize(52, displayScale),
     },
+    quiet: {
+      backgroundColor: 'transparent',
+      minHeight: scaleSize(44, displayScale),
+      paddingVertical: scaleSize(10, displayScale),
+    },
     primary: {
       backgroundColor: colors.primary,
     },
@@ -87,9 +92,9 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
       backgroundColor: colors.primaryMuted,
     },
     outline: {
-      backgroundColor: 'transparent',
-      borderWidth: 1.5,
-      borderColor: colors.primary,
+      borderWidth: 1,
+      borderColor: colors.hairline,
+      backgroundColor: colors.surface,
     },
     destructive: {
       backgroundColor: colors.danger,
@@ -97,12 +102,10 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
     disabled: {
       opacity: 0.5,
     },
-    pressed: {
-      opacity: 0.85,
-    },
     text: {
       ...typography.label,
       fontSize: scaleFontSize(16, fontScale),
+      fontWeight: '600',
     },
     textPrimary: {
       color: colors.white,

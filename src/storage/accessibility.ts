@@ -24,6 +24,7 @@ export async function getStoredAccessibilityPrefs(): Promise<AccessibilityPrefs>
         parsed.displaySize && isDisplaySizePreference(parsed.displaySize)
           ? parsed.displaySize
           : DEFAULT_ACCESSIBILITY_PREFS.displaySize,
+      reduceMotion: parsed.reduceMotion === true,
     };
   } catch {
     return { ...DEFAULT_ACCESSIBILITY_PREFS };
@@ -46,6 +47,13 @@ export async function setStoredDisplaySize(
 ): Promise<AccessibilityPrefs> {
   const current = await getStoredAccessibilityPrefs();
   const next = { ...current, displaySize };
+  await setStoredAccessibilityPrefs(next);
+  return next;
+}
+
+export async function setStoredReduceMotion(reduceMotion: boolean): Promise<AccessibilityPrefs> {
+  const current = await getStoredAccessibilityPrefs();
+  const next = { ...current, reduceMotion };
   await setStoredAccessibilityPrefs(next);
   return next;
 }

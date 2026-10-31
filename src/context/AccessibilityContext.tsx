@@ -18,7 +18,9 @@ import {
   getStoredAccessibilityPrefs,
   setStoredDisplaySize,
   setStoredFontSize,
+  setStoredReduceMotion,
 } from '../storage/accessibility';
+import { AccessibilityInfo } from 'react-native';
 import { buildSpacing, buildTypography, type ScaledSpacing, type ScaledTypography } from '../theme/scale';
 
 interface AccessibilityContextValue {
@@ -30,6 +32,9 @@ interface AccessibilityContextValue {
   ready: boolean;
   setFontSize: (size: FontSizePreference) => Promise<void>;
   setDisplaySize: (size: DisplaySizePreference) => Promise<void>;
+  /** True when the OS or the in-app setting asks for reduced motion. */
+  reduceMotion: boolean;
+  setReduceMotion: (on: boolean) => Promise<void>;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextValue | null>(null);
@@ -37,6 +42,15 @@ const AccessibilityContext = createContext<AccessibilityContextValue | null>(nul
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
   const [prefs, setPrefs] = useState<AccessibilityPrefs>(DEFAULT_ACCESSIBILITY_PREFS);
   const [ready, setReady] = useState(false);
+  const [osReduceMotion, setOsReduceMotion] = useState(false);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then(setOsReduceMotion)
+      .catch(() => undefined);
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setOsReduceMotion);
+    return () => sub?.remove?.();
+  }, []);
 
   useEffect(() => {
     getStoredAccessibilityPrefs().then((stored) => {
@@ -61,8 +75,17 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     setPrefs(next);
   }, []);
 
+  const setReduceMotion = useCallback(async (on: boolean) => {
+    const next = await setStoredReduceMotion(on);
+    setPrefs(next);
+  }, []);
+
+  const reduceMotion = osReduceMotion || prefs.reduceMotion;
+
   const value = useMemo(
     () => ({
+      reduceMotion,
+      setReduceMotion,
       prefs,
       typography,
       spacing,
@@ -72,7 +95,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       setFontSize,
       setDisplaySize,
     }),
-    [prefs, typography, spacing, fontScale, displayScale, ready, setFontSize, setDisplaySize]
+    [prefs, typography, spacing, fontScale, displayScale, ready, setFontSize, setDisplaySize, reduceMotion, setReduceMotion]
   );
 
   return (

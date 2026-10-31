@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Lightbulb } from 'lucide-react-native';
 import { Card } from './Card';
 import { useLanguage } from '../context/LanguageContext';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
@@ -24,7 +25,7 @@ export function InsightOfWeekCard({ onPress }: Props) {
     >
       <Card style={styles.card}>
         <View style={styles.eyebrowRow}>
-          <Text style={styles.eyebrowIcon}>💡</Text>
+          <Lightbulb size={16} color={colors.inkSecondary} strokeWidth={1.75} />
           <Text style={styles.eyebrow}>{t.notifications.insightOfWeekTitle}</Text>
         </View>
         <Text style={styles.body} numberOfLines={4}>
