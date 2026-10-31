@@ -340,3 +340,13 @@ median time to first result under 2 minutes; ≥ 80 % of users who start D reach
 5. Layouts verified on iPhone SE (3rd gen), iPhone 16 Pro Max, iPad (portrait, landscape, split
    view), Pixel 8, Galaxy Z Fold (folded and unfolded), web desktop.
 6. Users who already have reports never see onboarding.
+
+## Implementation status (2026-10)
+
+Built: Welcome (device language + language chip, trust chips, ring reveal) → Goal (skippable,
+editable in Settings) → Company (country prefilled from device region with live grid factor,
+8 industry chips + full list, consequence line) → First data (2–3 sources for the sector, live
+footprint ring; "Save and finish later" keeps a draft) → Results reveal card (biggest source,
+one quantified lever, goal-specific next action, privacy footer). Existing users with saved
+reports skip onboarding. Backup is offered on Home after two finalized reports (90-day cadence).
+The legacy Language/Onboarding carousel routes remain reachable but are no longer the entry path.

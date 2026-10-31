@@ -1,5 +1,9 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
+import { FlightSheet } from '../components/FlightSheet';
+import { QualityChips } from '../design/QualityChips';
+import { qualityOf } from '../utils/reportMetrics';
 import { AssessmentNotesField } from '../components/AssessmentNotesField';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -53,6 +57,11 @@ export function Scope3Screen({ navigation }: Props) {
   const currency = emissions.spendCurrency;
   const setScope3 = (patch: Partial<Scope3Inputs>) =>
     updateDraft({ scope3: { ...draft.scope3, ...patch } });
+  const [flightsOpen, setFlightsOpen] = useState(false);
+  const addFlight = (haul: 'short' | 'long', pkm: number) => {
+    const key = haul === 'short' ? 'flightShortHaulKm' : 'flightLongHaulKm';
+    setScope3({ [key]: (draft.scope3[key] ?? 0) + pkm } as Partial<Scope3Inputs>);
+  };
 
   const hasSpend = SCOPE3_FIELDS.some((f) => f.unit === 'currency' && (draft.scope3[f.key] ?? 0) > 0);
   const missingRate =
@@ -79,6 +88,14 @@ export function Scope3Screen({ navigation }: Props) {
         unit={unitFor(def)}
         hint={factorHint(def)}
         onChange={(v) => setScope3({ [def.key]: v ?? 0 } as Partial<Scope3Inputs>)}
+        footer={
+          (draft.scope3[def.key] ?? 0) > 0 ? (
+            <QualityChips
+              value={qualityOf(draft, def.key)}
+              onChange={(q) => updateDraft({ dataQuality: { ...(draft.dataQuality ?? {}), [def.key]: q } })}
+            />
+          ) : undefined
+        }
       />
     ));
 
@@ -137,6 +154,9 @@ export function Scope3Screen({ navigation }: Props) {
         {category === 'cat4Transport' ? (
           <Text style={styles.sectionHint}>{t.scope3.freightHint}</Text>
         ) : null}
+        {category === 'cat6Travel' ? (
+          <Button title={t.flights.open} variant="outline" onPress={() => setFlightsOpen(true)} />
+        ) : null}
         {renderFields(defs)}
       </>
     );
@@ -190,6 +210,7 @@ export function Scope3Screen({ navigation }: Props) {
         </Text>
       </Card>
       <SavedToast visible={savedVisible} message={t.scopeInputs.saved} />
+      <FlightSheet visible={flightsOpen} onClose={() => setFlightsOpen(false)} onAdd={addFlight} />
     </ScreenLayout>
   );
 }

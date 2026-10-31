@@ -1,5 +1,9 @@
 export type RootStackParamList = {
   Language: undefined;
+  Welcome: undefined;
+  SetupGoal: undefined;
+  SetupCompany: undefined;
+  FirstData: undefined;
   Onboarding: undefined;
   LearnMore: undefined;
   LearnLibrary: undefined;
@@ -16,6 +20,8 @@ export type RootStackParamList = {
     assessmentId?: string;
     promptRate?: boolean;
     promptNotifications?: boolean;
+    /** First result after onboarding: animate the ring and show the biggest lever. */
+    reveal?: boolean;
   };
   PrivacyPolicy: undefined;
 };

@@ -23,7 +23,9 @@ import { SavedToast } from '../components/SavedToast';
 import { Button } from '../components/Button';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ScreenLayout } from '../components/ScreenLayout';
-import { buildAssessment, formatEmissions } from '../calculations';
+import { assessmentToDraft, buildAssessment, formatEmissions } from '../calculations';
+import { ReportProfileCard } from '../components/ReportProfileCard';
+import { RevealCard } from '../components/RevealCard';
 import type { IndustryKey } from '../data/industries';
 import { useAssessment } from '../context/AssessmentContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -83,6 +85,7 @@ export function ResultsScreen({ navigation, route }: Props) {
   const chartWidth = windowWidth - spacing.lg * 2;
 
   const assessmentId = route.params?.assessmentId;
+  const [revealTarget, setRevealTarget] = useState(false);
 
   const reloadFromStorage = useCallback(async () => {
     const list = await loadAssessments();
@@ -334,6 +337,15 @@ export function ResultsScreen({ navigation, route }: Props) {
 
   return (
     <ScreenLayout>
+      {route.params?.reveal && assessment.id !== 'preview' ? (
+        <RevealCard
+          assessment={assessment}
+          onPdf={() => void handleGeneratePdf()}
+          onTarget={() => setRevealTarget(true)}
+          onAddMore={handleEdit}
+        />
+      ) : null}
+      {revealTarget ? <TargetEditorPanel assessment={assessment} onSave={handleSaveTarget} /> : null}
       <EmissionReportContent
         assessment={assessment}
         t={t}
@@ -357,13 +369,31 @@ export function ResultsScreen({ navigation, route }: Props) {
         chartInnerWidth={chartInnerWidth}
       />
 
+      {assessment.id !== 'preview' ? (
+        <ReportProfileCard
+          assessment={assessment}
+          onSave={async (patch) => {
+            const draftNext = { ...assessmentToDraft(assessment), ...patch };
+            const rebuilt = buildAssessment(draftNext, assessment.id, { finalize: !assessment.isDraft });
+            await persistAssessment({
+              ...assessment,
+              ...rebuilt,
+              isDraft: assessment.isDraft,
+              finalizedAt: assessment.finalizedAt,
+              restatement: assessment.restatement,
+              updatedAt: new Date().toISOString(),
+            });
+          }}
+        />
+      ) : null}
+
       <TargetProgressCard
         assessment={assessment}
         allAssessments={allAssessments}
         t={t}
       />
 
-      {assessment.id !== 'preview' ? (
+      {assessment.id !== 'preview' && !revealTarget ? (
         <TargetEditorPanel assessment={assessment} onSave={handleSaveTarget} />
       ) : null}
 

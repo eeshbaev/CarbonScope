@@ -25,6 +25,7 @@ import { STORE_CONFIG } from '../constants/store';
 import { BackupError } from '../utils/backup';
 import { exportBackup, exportCsv, importBackup } from '../utils/backupIO';
 import { markBackupMade } from '../storage/backupNudge';
+import { getGoal, setGoal, type OnboardingGoal } from '../onboarding/state';
 import * as Linking from 'expo-linking';
 import { colors, radii } from '../theme';
 
@@ -49,6 +50,11 @@ export function SettingsScreen({ navigation }: Props) {
   const [clearing, setClearing] = useState(false);
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs | null>(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [goal, setGoalState] = useState<OnboardingGoal>('none');
+
+  useEffect(() => {
+    void getGoal().then(setGoalState);
+  }, []);
 
   const loadNotifState = useCallback(async () => {
     setNotifPrefs(await getNotificationPrefs());
@@ -309,6 +315,22 @@ export function SettingsScreen({ navigation }: Props) {
           label: item.nativeLabel,
         }))}
         placeholder={t.common.selectLanguage}
+      />
+
+      <FormPicker
+        label={t.onboarding2.goalSetting}
+        value={goal}
+        onValueChange={(v) => {
+          const g = v as OnboardingGoal;
+          setGoalState(g);
+          void setGoal(g);
+        }}
+        items={[
+          { value: 'request', label: t.onboarding2.goalRequest },
+          { value: 'reduce', label: t.onboarding2.goalReduce },
+          { value: 'consultant', label: t.onboarding2.goalConsultant },
+          { value: 'none', label: t.onboarding2.goalNone },
+        ]}
       />
 
       <ConfirmModal

@@ -22,11 +22,15 @@ import { Scope2Screen } from '../screens/Scope2Screen';
 import { Scope3Screen } from '../screens/Scope3Screen';
 import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { WelcomeScreen } from '../screens/WelcomeScreen';
+import { SetupGoalScreen } from '../screens/SetupGoalScreen';
+import { SetupCompanyScreen } from '../screens/SetupCompanyScreen';
+import { FirstDataScreen } from '../screens/FirstDataScreen';
 import {
   initNotificationHandler,
   onAppForeground,
 } from '../notifications/notificationService';
-import { hasSeenOnboarding, hasSelectedLanguage } from '../storage';
+import { hasSeenOnboarding, loadAssessments } from '../storage';
 import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
@@ -53,10 +57,10 @@ function NavigatorContent() {
 
   useEffect(() => {
     if (!langReady) return;
-    Promise.all([hasSelectedLanguage(), hasSeenOnboarding()]).then(([hasLang, seenOnboarding]) => {
-      if (!hasLang) setInitialRoute('Language');
-      else if (!seenOnboarding) setInitialRoute('Onboarding');
-      else setInitialRoute('Home');
+    // New users go straight to Welcome (language defaults to the device's; a chip lets them
+    // change it). Anyone with saved reports — or who has finished onboarding — lands on Home.
+    Promise.all([hasSeenOnboarding(), loadAssessments()]).then(([seen, saved]) => {
+      setInitialRoute(seen || saved.length > 0 ? 'Home' : 'Welcome');
     });
   }, [langReady]);
 
@@ -83,6 +87,10 @@ function NavigatorContent() {
         }}
       >
         <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="SetupGoal" component={SetupGoalScreen} options={{ title: '' }} />
+        <Stack.Screen name="SetupCompany" component={SetupCompanyScreen} options={{ title: '' }} />
+        <Stack.Screen name="FirstData" component={FirstDataScreen} options={{ title: '' }} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
         <Stack.Screen name="LearnMore" component={LearnMoreScreen} options={{ title: t.learnMore.title }} />
         <Stack.Screen

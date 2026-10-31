@@ -33,7 +33,8 @@ export function LanguageScreen({ navigation }: Props) {
 
   const handleContinue = async () => {
     await setLocale(selected);
-    navigation.replace('Onboarding');
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.replace('Welcome');
   };
 
   return (

@@ -19,6 +19,8 @@ type Props = {
   nullable?: boolean;
   placeholder?: string;
   last?: boolean;
+  /** Extra content under the field (e.g. data-quality chips). */
+  footer?: React.ReactNode;
 };
 
 function toDisplay(value: number | null, nullable: boolean): string {
@@ -38,6 +40,7 @@ export function NumberField({
   nullable = false,
   placeholder,
   last = false,
+  footer,
 }: Props) {
   const styles = useThemedStyles(createStyles);
   const initial = toDisplay(value, nullable);
@@ -74,6 +77,7 @@ export function NumberField({
         {unit ? <Text style={styles.unit}>{unit}</Text> : null}
       </View>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
     </View>
   );
 }
@@ -116,6 +120,9 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
       minWidth: scaleSize(90, displayScale),
       color: colors.textSecondary,
       fontWeight: '600',
+    },
+    footer: {
+      marginTop: spacing.sm,
     },
     hint: {
       ...typography.caption,

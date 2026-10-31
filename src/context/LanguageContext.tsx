@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getTranslations, type Locale, type TranslationKeys } from '../i18n';
 import { getStoredLanguage, setStoredLanguage } from '../storage';
+import { deviceLocale } from '../onboarding/device';
 
 interface LanguageContextValue {
   locale: Locale;
@@ -17,7 +18,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     getStoredLanguage().then((stored) => {
-      if (stored) setLocaleState(stored);
+      // Follow the device language until the user picks one explicitly.
+      setLocaleState(stored ?? deviceLocale());
       setReady(true);
     });
   }, []);

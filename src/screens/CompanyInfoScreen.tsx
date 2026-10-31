@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
+import { ReportSettingsFields } from '../components/ReportSettingsFields';
 import { Card } from '../components/Card';
 import { CountryPicker } from '../components/CountryPicker';
 import { FormPicker } from '../components/FormPicker';
@@ -152,6 +153,10 @@ export function CompanyInfoScreen({ navigation }: Props) {
         placeholder={t.company.clientTagPlaceholder}
         hint={t.company.clientTagHint}
       />
+
+      <Card style={styles.periodCard}>
+        <ReportSettingsFields draft={draft} onChange={updateDraft} />
+      </Card>
 
       <View style={styles.footer}>
         <Button title={t.company.continueScope1} onPress={handleContinue} />

@@ -1,13 +1,16 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { Settings } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CenteredFAB } from '../components/CenteredFAB';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { DeletedCompanyCard } from '../components/DeletedCompanyCard';
 import { HomeHero } from '../components/HomeHero';
+import { Banner } from '../design/Banner';
+import { dismissBackupNudge, markBackupMade, shouldOfferBackup } from '../storage/backupNudge';
+import { exportBackup } from '../utils/backupIO';
 import { InsightOfWeekCard } from '../components/InsightOfWeekCard';
 import { InsightDetailModal } from '../components/InsightDetailModal';
 import type { EducationalTipKey } from '../notifications/educationalTips';
@@ -45,6 +48,12 @@ export function HomeScreen({ navigation }: Props) {
   const { startNew, startEdit } = useAssessment();
   const { t, locale } = useLanguage();
   const clearGhost = useCallback(() => setRecentlyDeleted(null), []);
+  const [offerBackup, setOfferBackup] = useState(false);
+  const finalizedCount = assessments.filter((a) => !a.isDraft).length;
+
+  useEffect(() => {
+    void shouldOfferBackup(finalizedCount).then(setOfferBackup);
+  }, [finalizedCount]);
 
   const {
     runDeleteFeedbackFlow,
@@ -146,7 +155,22 @@ export function HomeScreen({ navigation }: Props) {
             <Settings size={24} color={colors.inkSecondary} strokeWidth={1.75} />
           </Pressable>
         </View>
-        <HomeHero showBackdrop />
+        {assessments.length === 0 ? <HomeHero showBackdrop /> : null}
+        {offerBackup ? (
+          <Banner
+            text={t.settings.backupNudge}
+            actionLabel={t.settings.backupNudgeAction}
+            onAction={async () => {
+              try {
+                await exportBackup();
+                await markBackupMade();
+              } catch {
+                await dismissBackupNudge();
+              }
+              setOfferBackup(false);
+            }}
+          />
+        ) : null}
         <InsightOfWeekCard
           onPress={(_key: EducationalTipKey, body: string, title: string) => {
             setInsightTitle(title);

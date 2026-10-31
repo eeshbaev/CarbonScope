@@ -24,6 +24,7 @@ import { lineLabel } from './lineLabels';
 import { formatResolvedInputLine } from './scopeInputDisplay';
 import { resolveCategoryTotal } from './scopeFieldInputs';
 import { standardUnitAbbr } from './unitLabels';
+import { dataQualitySummary, intensityMetrics } from './reportMetrics';
 
 export interface ReportRow {
   key: string;
@@ -233,6 +234,38 @@ export function buildMethodologyRows(
     });
   }
   rows.push({ key: 'datasets', label: r.pdfFactorVersion, value: factorStamp(assessment) });
+  const b = assessment.boundary;
+  rows.push({
+    key: 'boundary',
+    label: t.boundary.title,
+    value:
+      b?.approach === 'equity'
+        ? t.boundary.reportLineEquity.replace('{pct}', String(b.equitySharePct ?? 100))
+        : t.boundary.reportLine.replace(
+            '{approach}',
+            b?.approach === 'financial' ? t.boundary.financial : t.boundary.operational
+          ),
+  });
+  const q = dataQualitySummary(assessment);
+  if (q.total > 0) {
+    const pct = (v: number) => String(Math.round((v / q.total) * 100));
+    rows.push({
+      key: 'quality',
+      label: t.quality.title,
+      value: t.quality.summary
+        .replace('{measured}', pct(q.measured))
+        .replace('{invoice}', pct(q.invoice))
+        .replace('{estimated}', pct(q.estimated)),
+    });
+  }
+  const m = intensityMetrics(assessment);
+  const cur = breakdown.spendCurrency === 'OTHER' ? '' : breakdown.spendCurrency;
+  const intensity = [
+    m.perEmployee != null ? `${formatEmissions(m.perEmployee)} tCO₂e ${t.intensity.perEmployee}` : null,
+    m.perMillionRevenue != null ? `${formatEmissions(m.perMillionRevenue)} tCO₂e ${t.intensity.perMillion.replace('{currency}', cur)}` : null,
+    m.kgPerM2 != null ? `${formatEmissions(m.kgPerM2)} ${t.intensity.perM2}` : null,
+  ].filter(Boolean);
+  if (intensity.length) rows.push({ key: 'intensity', label: t.intensity.title, value: intensity.join('; ') });
   if (assessment.scope3.includeFuelEnergyUpstream) {
     rows.push({ key: 'cat3', label: r.pdfCat3Basis, value: r.cat3Basis });
   }
