@@ -15,8 +15,14 @@ import {
   EMISSION_FACTOR_REFERENCE_YEAR,
   EMISSION_FACTOR_SOURCES,
 } from '../data/emissionFactors';
-import { EMISSION_FACTORS } from '../constants';
-import { calculateScope3ByCategory } from '../calculations';
+import { FUEL_FACTOR_DATASET } from '../data/fuelFactors';
+import {
+  buildGasRows,
+  buildInputRows,
+  buildMethodologyRows,
+  describeMarketBasis,
+  reportBreakdown,
+} from './reportRows';
 import {
   SCOPE3_CATEGORIES,
   SCOPE3_CATEGORY_NUMBER,
@@ -28,8 +34,6 @@ import { formatCategoryLabel } from '../data/categoryEmblems';
 import { colors } from '../theme';
 import type { Assessment } from '../types';
 import type { MethodologyLogEntry } from '../types/enterprise';
-import { resolveScope1Totals, resolveScope2Totals } from './scopeFieldInputs';
-import { formatResolvedInputLine } from './scopeInputDisplay';
 
 const C = {
   primary: colors.primary,
@@ -119,8 +123,14 @@ export function buildReportPdfHtml(
   const s2 = assessment.scope2Emissions;
   const s3 = assessment.scope3Emissions ?? 0;
   const hasScope3 = s3 > 0;
-  const scope3ByCategory = calculateScope3ByCategory(assessment.scope3);
+  const breakdown = reportBreakdown(assessment);
+  const scope3ByCategory = breakdown.scope3ByCategory;
   const scope3Lines = SCOPE3_FIELDS.filter((f) => (assessment.scope3[f.key] ?? 0) > 0);
+  const s2Market = assessment.scope2MarketEmissions ?? s2;
+  const marketDiffers = Math.abs(s2Market - s2) > 0.00005;
+  const inputRows = buildInputRows(assessment, t, locale, breakdown.spendCurrency);
+  const gasRows = buildGasRows(assessment, breakdown, t, tco2e);
+  const methodologyRows = buildMethodologyRows(assessment, breakdown, t, locale, countryName);
   const scopeCellWidth = hasScope3 ? '33%' : '50%';
 
   const recHtml = recommendations
@@ -155,7 +165,7 @@ export function buildReportPdfHtml(
             const actionLabel = ml.actions[e.action];
             return `<tr>
       <td colspan="2" style="padding:10px 0;border-bottom:1px solid ${C.border};font-size:13px;">
-        <div style="font-weight:600;color:${C.text};">${escapeHtml(formatAppDateTime(new Date(e.timestamp), locale))} · ${escapeHtml(actionLabel)} · v${escapeHtml(e.factorVersion)} · ${escapeHtml(e.factorYear)}</div>
+        <div style="font-weight:600;color:${C.text};">${escapeHtml(formatAppDateTime(new Date(e.timestamp), locale))} · ${escapeHtml(actionLabel)} · v${escapeHtml(e.factorVersion)} · ${escapeHtml(e.factorYear)}${e.fuelFactorVersion ? ` · fuels v${escapeHtml(e.fuelFactorVersion)}` : ''}</div>
         <div style="color:${C.textSecondary};margin-top:4px;">${escapeHtml(factorLine)}</div>
       </td>
     </tr>`;
@@ -170,11 +180,7 @@ export function buildReportPdfHtml(
   <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;font-size:13px;">
     ${row(t.results.pdfFactorVersion, EMISSION_FACTOR_DATASET_VERSION)}
     ${row(t.results.pdfFactorYear, EMISSION_FACTOR_REFERENCE_YEAR)}
-    ${row(
-      t.results.pdfScope1Factors,
-      `Diesel ${EMISSION_FACTORS.diesel}, Petrol ${EMISSION_FACTORS.petrol}, Gas ${EMISSION_FACTORS.naturalGas} kg CO₂e per unit`
-    )}
-    ${row(t.results.pdfScope2Factor, `${assessment.electricityFactor} kg CO₂e/kWh (${countryName})`)}
+    ${methodologyRows.map((r) => row(r.label, r.value)).join('')}
     ${
       hasScope3
         ? row(
@@ -182,9 +188,13 @@ export function buildReportPdfHtml(
             scope3Lines
               .map(
                 (f) =>
-                  `${t.scope3.fields[f.key]}: ${t.scope3.factorLine
-                    .replace('{factor}', formatAppNumber(f.factor, locale))
-                    .replace('{unit}', t.scope3.units[f.unit])}`
+                  `${t.scope3.fields[f.key]}: ${
+                    f.unit === 'currency'
+                      ? t.scope3.spendFactorLine.replace('{factor}', formatAppNumber(f.factor, locale))
+                      : t.scope3.factorLine
+                          .replace('{factor}', formatAppNumber(f.factor, locale))
+                          .replace('{unit}', t.scope3.units[f.unit])
+                  }`
               )
               .join('; ')
           )
@@ -193,6 +203,7 @@ export function buildReportPdfHtml(
   </table>
   <p style="font-size:12px;color:${C.textSecondary};line-height:1.5;margin-top:12px;">${escapeHtml(t.results.pdfDisclaimer)}</p>
   <p style="font-size:11px;color:${C.textSecondary};margin-top:8px;">${escapeHtml(EMISSION_FACTOR_SOURCES)}</p>
+  <p style="font-size:11px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(FUEL_FACTOR_DATASET.sources)}</p>
   ${hasScope3 ? `<p style="font-size:11px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(SCOPE3_FACTOR_SOURCES)}</p>` : ''}`;
 
   return `<!DOCTYPE html>
@@ -254,6 +265,7 @@ export function buildReportPdfHtml(
         <div style="font-size:11px;font-weight:700;color:${C.textSecondary};margin-bottom:8px;">${escapeHtml(t.results.scope2Indirect)}</div>
         <div style="font-size:28px;font-weight:700;color:${C.primary};">${escapeHtml(formatEmissions(s2))}</div>
         <div style="font-size:12px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(tco2e)}</div>
+        ${marketDiffers ? `<div style="font-size:11px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(t.results.scope2MarketLine.replace('{value}', formatEmissions(s2Market)))}</div>` : ''}
       </td>
       ${
         hasScope3
@@ -285,6 +297,30 @@ export function buildReportPdfHtml(
       : ''
   }
 
+  ${
+    s1 > 0
+      ? `<h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.scope1ByGasTitle)}</h2>
+  <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">${gasRows.map((r) => row(r.label, r.value)).join('')}</table>
+  <p style="font-size:11px;color:${C.textSecondary};margin-top:6px;">${escapeHtml(
+    assessment.scope1ByGas
+      ? t.results.gwpBasis.replace('{basis}', FUEL_FACTOR_DATASET.gwpBasis)
+      : t.results.legacyFactorsNote
+  )}</p>`
+      : ''
+  }
+  ${
+    marketDiffers
+      ? `<h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.scope2DualTitle)}</h2>
+  <p style="font-size:13px;color:${C.textSecondary};line-height:1.5;">${escapeHtml(
+    t.results.scope2DualBody
+      .replace('{location}', formatEmissions(s2))
+      .replace('{market}', formatEmissions(s2Market))
+      .replace(/\{unit\}/g, tco2e)
+  )}</p>
+  <p style="font-size:12px;color:${C.textSecondary};">${escapeHtml(describeMarketBasis(assessment, t, locale))}</p>`
+      : ''
+  }
+
   <h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.recommendations)} — ${escapeHtml(industryName)}</h2>
   <table cellpadding="0" cellspacing="0" width="100%">${recHtml}</table>
 
@@ -292,57 +328,8 @@ export function buildReportPdfHtml(
   <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
     ${row(t.results.country, countryName)}
     ${row(t.results.reportingPeriod, periodRange)}
-    ${row(
-      formatCategoryLabel(t.scope1.diesel, 'diesel'),
-      formatResolvedInputLine(
-        resolveScope1Totals(assessment.scope1).dieselLiters,
-        'fuel',
-        assessment.reportingPeriod,
-        assessment.scope1.diesel.useMonthly,
-        t,
-        locale
-      )
-    )}
-    ${row(
-      formatCategoryLabel(t.scope1.petrol, 'petrol'),
-      formatResolvedInputLine(
-        resolveScope1Totals(assessment.scope1).petrolLiters,
-        'fuel',
-        assessment.reportingPeriod,
-        assessment.scope1.petrol.useMonthly,
-        t,
-        locale
-      )
-    )}
-    ${row(
-      formatCategoryLabel(t.scope1.naturalGas, 'naturalGas'),
-      formatResolvedInputLine(
-        resolveScope1Totals(assessment.scope1).naturalGasKwh,
-        'gas',
-        assessment.reportingPeriod,
-        assessment.scope1.naturalGas.useMonthly,
-        t,
-        locale
-      )
-    )}
-    ${row(
-      formatCategoryLabel(t.scope2.electricity, 'electricity'),
-      formatResolvedInputLine(
-        resolveScope2Totals(assessment.scope2).electricityKwh,
-        'electricity',
-        assessment.reportingPeriod,
-        assessment.scope2.electricity.useMonthly,
-        t,
-        locale
-      )
-    )}
-    ${scope3Lines
-      .map((f) =>
-        row(
-          formatCategoryLabel(t.scope3.fields[f.key], f.key),
-          `${formatAppNumber(assessment.scope3[f.key], locale)} ${t.scope3.units[f.unit]}`
-        )
-      )
+    ${inputRows
+      .map((r) => row(r.category ? formatCategoryLabel(r.label, r.category) : r.label, r.value))
       .join('')}
     ${row(t.scope2.factorAuto, `${assessment.electricityFactor} ${t.common.kgCo2e}${t.units.perKwh}`)}
     ${

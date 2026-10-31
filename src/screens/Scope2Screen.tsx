@@ -8,7 +8,12 @@ import { CategoryInputSection } from '../components/CategoryInputSection';
 import { InputProgressCard } from '../components/InputProgressCard';
 import { SavedToast } from '../components/SavedToast';
 import { ScreenLayout } from '../components/ScreenLayout';
-import { calculateScope2Emissions, formatEmissions } from '../calculations';
+import { computeEmissions, formatEmissions } from '../calculations';
+import { NumberField } from '../components/NumberField';
+import { CATEGORY_LINES, getLineInput, setLineInput } from '../data/inputLines';
+import type { EvidenceCategory } from '../types/enterprise';
+import type { MarketBasedInputs } from '../types/scopeInputs';
+import { lineFactorHint, lineInfoText, lineLabel } from '../utils/lineLabels';
 import { getElectricityFactorForCountry } from '../data/emissionFactors';
 import { countryCodeToFlag } from '../data/countries';
 import { useAssessment } from '../context/AssessmentContext';
@@ -22,13 +27,15 @@ import { DEFAULT_INDUSTRY } from '../data/industries';
 import type { RootStackParamList } from '../navigation/types';
 import type { ReportingPeriod } from '../types';
 import { supportsMonthlyEntry } from '../types/scopeInputs';
-import { getReportingMonthsForDraft, setScope2Field } from '../utils/scopeFieldInputs';
+import { getReportingMonthsForDraft, resolveCategoryTotal } from '../utils/scopeFieldInputs';
 import { getTco2eLabel } from '../utils/reportingPeriodCopy';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors } from '../theme';
 import { scaleFontSize } from '../theme/scale';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Scope2'>;
+
+const SCOPE2_LINES = CATEGORY_LINES.filter((l) => l.scope === 2);
 
 export function Scope2Screen({ navigation }: Props) {
   const { draft, updateDraft, saveCurrent } = useAssessment();
@@ -47,7 +54,23 @@ export function Scope2Screen({ navigation }: Props) {
   } = useScopeEvidence();
 
   const factor = getElectricityFactorForCountry(draft.countryCode || 'US');
-  const preview = calculateScope2Emissions(draft.scope2, draft.countryCode || 'US');
+  const emissions = computeEmissions({
+    scope1: draft.scope1,
+    scope2: draft.scope2,
+    scope3: draft.scope3,
+    countryCode: draft.countryCode || 'US',
+  });
+  const market = draft.scope2.market;
+  const setMarket = (patch: Partial<MarketBasedInputs>) =>
+    updateDraft({ scope2: { ...draft.scope2, market: { ...market, ...patch } } });
+  const evidenceFor = (category: EvidenceCategory) => ({
+    category,
+    items: evidenceItems,
+    isSlotBusy: (monthKey?: string) => isSlotBusy(category, monthKey),
+    onSlotPress: (monthKey?: string) => handleEvidenceSlot(category, monthKey),
+    onDelete: requestDeleteEvidence,
+  });
+  const kgPerKwh = `${t.common.kgCo2e}${t.units.perKwh}`;
   const industry = (draft.industry || DEFAULT_INDUSTRY) as IndustryKey;
   const period = (draft.reportingPeriod || '1_year') as ReportingPeriod;
   const tco2eLabel = getTco2eLabel(t, period);
@@ -92,35 +115,77 @@ export function Scope2Screen({ navigation }: Props) {
       </Card>
       <InputProgressCard
         months={months}
-        lines={[
-          {
-            key: 'electricity',
-            label: t.scope2.electricity,
-            input: draft.scope2.electricity,
-          },
-        ]}
+        lines={SCOPE2_LINES.filter(
+          (l) => l.key === 'electricity' || resolveCategoryTotal(getLineInput(draft, l.key)) > 0
+        ).map((l) => ({
+          key: l.key,
+          label: lineLabel(t, l.key),
+          input: getLineInput(draft, l.key),
+        }))}
       />
-      <CategoryInputSection
-        key="scope2-electricity"
-        categoryKey="electricity"
-        label={t.scope2.electricity}
-        kind="electricity"
-        infoField="electricity"
-        industry={industry}
-        category={draft.scope2.electricity}
-        months={months}
-        monthlyEnabled={monthlyEnabled}
-        onCategoryChange={(electricity) =>
-          updateDraft({ scope2: setScope2Field(draft.scope2, electricity) })
-        }
-        evidence={{
-          category: 'electricity',
-          items: evidenceItems,
-          isSlotBusy: (monthKey) => isSlotBusy('electricity', monthKey),
-          onSlotPress: (monthKey) => handleEvidenceSlot('electricity', monthKey),
-          onDelete: requestDeleteEvidence,
-        }}
-      />
+      {SCOPE2_LINES.map((l) => (
+        <View key={l.key}>
+          {l.key === 'evKm' ? (
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t.scope2.otherEnergyTitle}</Text>
+              <Text style={styles.sectionHint}>{t.scope2.otherEnergyHint}</Text>
+            </View>
+          ) : null}
+          <CategoryInputSection
+            categoryKey={l.key}
+            label={lineLabel(t, l.key)}
+            hint={lineFactorHint(t, locale, l.key, factor)}
+            kind={l.kind}
+            infoField={l.hintField}
+            infoText={l.hintField ? undefined : lineInfoText(t, locale, industry, l.key)}
+            industry={industry}
+            category={getLineInput(draft, l.key)}
+            months={months}
+            monthlyEnabled={monthlyEnabled}
+            onCategoryChange={(next) => updateDraft(setLineInput(draft, l.key, next))}
+            evidence={evidenceFor(l.evidence)}
+          />
+        </View>
+      ))}
+      <Card style={styles.marketCard}>
+        <Text style={styles.sectionTitle}>{t.scope2.market.title}</Text>
+        <Text style={styles.sectionHint}>{t.scope2.market.intro}</Text>
+        <NumberField
+          label={t.scope2.market.renewableKwh}
+          value={market.renewableKwh}
+          unit={t.units.kwh}
+          hint={t.scope2.market.renewableKwhHint}
+          onChange={(v) => setMarket({ renewableKwh: v ?? 0 })}
+        />
+        <NumberField
+          label={t.scope2.market.supplierFactor}
+          value={market.supplierFactor}
+          nullable
+          placeholder={t.scope2.market.notProvided}
+          unit={kgPerKwh}
+          hint={t.scope2.market.supplierFactorHint}
+          onChange={(v) => setMarket({ supplierFactor: v })}
+        />
+        <NumberField
+          label={t.scope2.market.residualMixFactor}
+          value={market.residualMixFactor}
+          nullable
+          placeholder={t.scope2.market.notProvided}
+          unit={kgPerKwh}
+          hint={t.scope2.market.residualMixFactorHint}
+          onChange={(v) => setMarket({ residualMixFactor: v })}
+        />
+        <NumberField
+          label={t.scope2.market.heatSupplierFactor}
+          value={market.heatSupplierFactor}
+          nullable
+          placeholder={t.scope2.market.notProvided}
+          unit={kgPerKwh}
+          hint={t.scope2.market.heatSupplierFactorHint}
+          onChange={(v) => setMarket({ heatSupplierFactor: v })}
+          last
+        />
+      </Card>
       <AssessmentNotesField
         value={draft.notes}
         onChange={(notes) => updateDraft({ notes })}
@@ -128,7 +193,11 @@ export function Scope2Screen({ navigation }: Props) {
       <Card style={styles.preview}>
         <Text style={styles.previewLabel}>{t.scope2.preview}</Text>
         <Text style={styles.previewValue}>
-          {formatEmissions(preview)} {tco2eLabel}
+          {formatEmissions(emissions.scope2Location)} {tco2eLabel}
+        </Text>
+        <Text style={styles.previewSub}>{t.scope2.previewLocation}</Text>
+        <Text style={styles.previewMarket}>
+          {t.scope2.previewMarket}: {formatEmissions(emissions.scope2Market)} {tco2eLabel}
         </Text>
       </Card>
       <SavedToast visible={savedVisible} message={t.scopeInputs.saved} />
@@ -181,6 +250,35 @@ function createStyles({ typography, spacing, fontScale }: ThemeSlice) {
       marginTop: spacing.sm,
       fontWeight: '600',
       color: colors.text,
+    },
+    sectionHeader: {
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    sectionTitle: {
+      ...typography.subtitle,
+      fontSize: scaleFontSize(17, fontScale),
+      color: colors.primary,
+    },
+    sectionHint: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+    },
+    marketCard: {
+      marginTop: spacing.md,
+      marginBottom: spacing.md,
+    },
+    previewSub: {
+      ...typography.caption,
+      marginTop: spacing.xs,
+    },
+    previewMarket: {
+      ...typography.body,
+      fontSize: scaleFontSize(15, fontScale),
+      fontWeight: '600',
+      color: colors.text,
+      marginTop: spacing.sm,
     },
     preview: {
       marginTop: spacing.sm,

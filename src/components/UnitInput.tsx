@@ -6,20 +6,18 @@ import { getInputHint, type InputHintField } from '../i18n/packs/inputHints';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors, radii } from '../theme';
 import { scaleFontSize, scaleSize } from '../theme/scale';
-import type { ElectricityUnit, FuelVolumeUnit, GasEnergyUnit } from '../units';
 import {
-  electricityToKwh,
-  fuelToLiters,
-  gasToKwh,
-  kwhToElectricity,
-  kwhToGas,
-  litersToFuel,
+  UNIT_OPTIONS,
+  fromStandardUnit,
+  standardUnitOf,
+  toStandardUnit,
+  type DisplayUnit,
+  type UnitKind,
 } from '../units';
+import { unitPeriodLabel } from '../utils/unitLabels';
 import { parseNumberInput } from '../utils/parseNumberInput';
 import { InfoCircleButton } from './InfoCircleButton';
 import { InfoHintModal } from './InfoHintModal';
-
-type UnitKind = 'fuel' | 'gas' | 'electricity';
 
 interface UnitInputProps {
   label: string;
@@ -45,6 +43,8 @@ const KIND_TO_HINT_FIELD: Record<UnitKind, InputHintField> = {
   fuel: 'diesel',
   gas: 'naturalGas',
   electricity: 'electricity',
+  mass: 'naturalGas',
+  distance: 'petrol',
 };
 
 export function UnitInput({
@@ -64,9 +64,7 @@ export function UnitInput({
 }: UnitInputProps) {
   const styles = useThemedStyles(createStyles);
   const { t, locale } = useLanguage();
-  const [fuelUnit, setFuelUnit] = useState<FuelVolumeUnit>('liters');
-  const [gasUnit, setGasUnit] = useState<GasEnergyUnit>('kwh');
-  const [elecUnit, setElecUnit] = useState<ElectricityUnit>('kwh');
+  const [unit, setUnitState] = useState<DisplayUnit>(standardUnitOf(kind));
   const [display, setDisplay] = useState('');
   const [infoVisible, setInfoVisible] = useState(false);
 
@@ -74,67 +72,27 @@ export function UnitInput({
   const infoMessage = getInputHint(locale, industry, resolvedInfoField);
 
   useEffect(() => {
-    if (kind === 'fuel') {
-      const v = litersToFuel(standardValue, fuelUnit);
-      setDisplay(v > 0 ? String(Math.round(v * 100) / 100) : '');
-    } else if (kind === 'gas') {
-      const v = kwhToGas(standardValue, gasUnit);
-      setDisplay(v > 0 ? String(Math.round(v * 100) / 100) : '');
-    } else {
-      const v = kwhToElectricity(standardValue, elecUnit);
-      setDisplay(v > 0 ? String(Math.round(v * 100) / 100) : '');
-    }
-  }, [standardValue, fuelUnit, gasUnit, elecUnit, kind]);
+    const v = fromStandardUnit(standardValue, kind, unit);
+    setDisplay(v > 0 ? String(Math.round(v * 100) / 100) : '');
+  }, [standardValue, unit, kind]);
 
   const perYear = timePeriod === 'year';
-  const unitOptions =
-    kind === 'fuel'
-      ? [
-          {
-            key: 'liters' as const,
-            label: perYear ? t.units.litersPerYear : t.units.litersPerMonth,
-          },
-          {
-            key: 'gallons' as const,
-            label: perYear ? t.units.gallonsPerYear : t.units.gallonsPerMonth,
-          },
-        ]
-      : kind === 'gas'
-        ? [
-            { key: 'kwh' as const, label: perYear ? t.units.kwhPerYear : t.units.kwhPerMonth },
-            { key: 'm3' as const, label: perYear ? t.units.m3PerYear : t.units.m3PerMonth },
-          ]
-        : [
-            { key: 'kwh' as const, label: perYear ? t.units.kwhPerYear : t.units.kwhPerMonth },
-            { key: 'mwh' as const, label: perYear ? t.units.mwhPerYear : t.units.mwhPerMonth },
-          ];
+  const unitOptions = UNIT_OPTIONS[kind].map((o) => ({
+    key: o.unit,
+    label: unitPeriodLabel(t, o.unit, perYear ? 'year' : 'month'),
+  }));
+  const activeUnit = unit;
 
-  const activeUnit = kind === 'fuel' ? fuelUnit : kind === 'gas' ? gasUnit : elecUnit;
-
-  const setUnit = (key: string) => {
+  const setUnit = (key: DisplayUnit) => {
     const num = parseNum(display);
-    if (kind === 'fuel') {
-      const next = key as FuelVolumeUnit;
-      setFuelUnit(next);
-      onStandardChange(fuelToLiters(num, next));
-    } else if (kind === 'gas') {
-      const next = key as GasEnergyUnit;
-      setGasUnit(next);
-      onStandardChange(gasToKwh(num, next));
-    } else {
-      const next = key as ElectricityUnit;
-      setElecUnit(next);
-      onStandardChange(electricityToKwh(num, next));
-    }
+    setUnitState(key);
+    onStandardChange(toStandardUnit(num, kind, key));
   };
 
   const handleChange = (text: string) => {
     if (!editable) return;
     setDisplay(text);
-    const num = parseNum(text);
-    if (kind === 'fuel') onStandardChange(fuelToLiters(num, fuelUnit));
-    else if (kind === 'gas') onStandardChange(gasToKwh(num, gasUnit));
-    else onStandardChange(electricityToKwh(num, elecUnit));
+    onStandardChange(toStandardUnit(parseNum(text), kind, unit));
   };
 
   return (

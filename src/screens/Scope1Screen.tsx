@@ -19,13 +19,23 @@ import { DEFAULT_INDUSTRY } from '../data/industries';
 import type { RootStackParamList } from '../navigation/types';
 import type { ReportingPeriod } from '../types';
 import { supportsMonthlyEntry } from '../types/scopeInputs';
-import { getReportingMonthsForDraft, setScope1Field } from '../utils/scopeFieldInputs';
+import { getReportingMonthsForDraft, resolveCategoryTotal } from '../utils/scopeFieldInputs';
+import { CATEGORY_LINES, getLineInput, setLineInput, type CategoryLineKey } from '../data/inputLines';
+import { REFRIGERANTS } from '../data/fuelFactors';
+import type { EvidenceCategory } from '../types/enterprise';
+import { lineFactorHint, lineInfoText, lineLabel } from '../utils/lineLabels';
+import { formatAppNumber } from '../utils/appLocale';
+import { CategoryLabel } from '../components/CategoryLabel';
+import { NumberField } from '../components/NumberField';
 import { getTco2eLabel } from '../utils/reportingPeriodCopy';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors } from '../theme';
 import { scaleFontSize } from '../theme/scale';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Scope1'>;
+
+const SCOPE1_LINES = CATEGORY_LINES.filter((l) => l.scope === 1);
+const PRIMARY_FUELS: CategoryLineKey[] = ['diesel', 'petrol', 'naturalGas'];
 
 export function Scope1Screen({ navigation }: Props) {
   const { draft, updateDraft, saveCurrent } = useAssessment();
@@ -43,7 +53,7 @@ export function Scope1Screen({ navigation }: Props) {
     isSlotBusy,
   } = useScopeEvidence();
 
-  const evidenceFor = (category: 'diesel' | 'petrol' | 'gas') => ({
+  const evidenceFor = (category: EvidenceCategory) => ({
     category,
     items: evidenceItems,
     isSlotBusy: (monthKey?: string) => isSlotBusy(category, monthKey),
@@ -84,60 +94,65 @@ export function Scope1Screen({ navigation }: Props) {
       <Text style={styles.source}>{t.scope1.source}</Text>
       <InputProgressCard
         months={months}
-        lines={[
-          { key: 'diesel', label: t.scope1.diesel, input: draft.scope1.diesel },
-          { key: 'petrol', label: t.scope1.petrol, input: draft.scope1.petrol },
-          { key: 'naturalGas', label: t.scope1.naturalGas, input: draft.scope1.naturalGas },
-        ]}
+        lines={SCOPE1_LINES.filter(
+          (l) => PRIMARY_FUELS.includes(l.key) || resolveCategoryTotal(getLineInput(draft, l.key)) > 0
+        ).map((l) => ({
+          key: l.key,
+          label: lineLabel(t, l.key),
+          input: getLineInput(draft, l.key),
+        }))}
       />
-      <CategoryInputSection
-        key="scope1-diesel"
-        categoryKey="diesel"
-        label={t.scope1.diesel}
-        hint={t.scope1.factorDiesel}
-        kind="fuel"
-        infoField="diesel"
-        industry={industry}
-        category={draft.scope1.diesel}
-        months={months}
-        monthlyEnabled={monthlyEnabled}
-        onCategoryChange={(diesel) =>
-          updateDraft({ scope1: setScope1Field(draft.scope1, 'diesel', diesel) })
-        }
-        evidence={evidenceFor('diesel')}
-      />
-      <CategoryInputSection
-        key="scope1-petrol"
-        categoryKey="petrol"
-        label={t.scope1.petrol}
-        hint={t.scope1.factorPetrol}
-        kind="fuel"
-        infoField="petrol"
-        industry={industry}
-        category={draft.scope1.petrol}
-        months={months}
-        monthlyEnabled={monthlyEnabled}
-        onCategoryChange={(petrol) =>
-          updateDraft({ scope1: setScope1Field(draft.scope1, 'petrol', petrol) })
-        }
-        evidence={evidenceFor('petrol')}
-      />
-      <CategoryInputSection
-        key="scope1-gas"
-        categoryKey="naturalGas"
-        label={t.scope1.naturalGas}
-        hint={t.scope1.factorGas}
-        kind="gas"
-        infoField="naturalGas"
-        industry={industry}
-        category={draft.scope1.naturalGas}
-        months={months}
-        monthlyEnabled={monthlyEnabled}
-        onCategoryChange={(naturalGas) =>
-          updateDraft({ scope1: setScope1Field(draft.scope1, 'naturalGas', naturalGas) })
-        }
-        evidence={evidenceFor('gas')}
-      />
+      {SCOPE1_LINES.map((l) => (
+        <View key={l.key}>
+          {l.key === 'lpg' ? (
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t.scope1.otherFuelsTitle}</Text>
+              <Text style={styles.sectionHint}>{t.scope1.otherFuelsHint}</Text>
+            </View>
+          ) : null}
+          <CategoryInputSection
+            categoryKey={l.key}
+            label={lineLabel(t, l.key)}
+            hint={lineFactorHint(t, locale, l.key, 0)}
+            kind={l.kind}
+            infoField={l.hintField}
+            infoText={l.hintField ? undefined : lineInfoText(t, locale, industry, l.key)}
+            industry={industry}
+            category={getLineInput(draft, l.key)}
+            months={months}
+            monthlyEnabled={monthlyEnabled}
+            onCategoryChange={(next) => updateDraft(setLineInput(draft, l.key, next))}
+            evidence={evidenceFor(l.evidence)}
+          />
+        </View>
+      ))}
+      <Card style={styles.refrigerantCard}>
+        <CategoryLabel
+          category="refrigerants"
+          label={t.scope1.refrigerantsTitle}
+          style={styles.sectionTitle}
+        />
+        <Text style={styles.sectionHint}>{t.scope1.refrigerantsHint}</Text>
+        {REFRIGERANTS.map((r, i) => (
+          <NumberField
+            key={r.key}
+            label={r.label}
+            value={draft.scope1.refrigerants[r.key]}
+            unit={t.units.kgAbbr}
+            hint={t.scope1.refrigerantGwp.replace(/\{gwp\}/g, formatAppNumber(r.gwp, locale))}
+            onChange={(v) =>
+              updateDraft({
+                scope1: {
+                  ...draft.scope1,
+                  refrigerants: { ...draft.scope1.refrigerants, [r.key]: v ?? 0 },
+                },
+              })
+            }
+            last={i === REFRIGERANTS.length - 1}
+          />
+        ))}
+        <Text style={styles.montreal}>{t.scope1.refrigerantMontreal}</Text>
+      </Card>
       <AssessmentNotesField
         value={draft.notes}
         onChange={(notes) => updateDraft({ notes })}
@@ -148,7 +163,7 @@ export function Scope1Screen({ navigation }: Props) {
           {formatEmissions(preview)} {tco2eLabel}
         </Text>
         <Text style={styles.standardNote}>
-          {t.results.storedAs}: {t.units.liters}, {t.units.kwh}
+          {t.results.storedAs}: {t.units.liters}, {t.units.kwh}, {t.units.kgAbbr}
         </Text>
       </Card>
       <SavedToast visible={savedVisible} message={t.scopeInputs.saved} />
@@ -176,6 +191,30 @@ function createStyles({ typography, spacing, fontScale }: ThemeSlice) {
       color: colors.textSecondary,
       marginBottom: spacing.lg,
       fontStyle: 'italic',
+    },
+    sectionHeader: {
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    sectionTitle: {
+      ...typography.subtitle,
+      fontSize: scaleFontSize(17, fontScale),
+      color: colors.primary,
+    },
+    sectionHint: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+    },
+    refrigerantCard: {
+      marginTop: spacing.md,
+      marginBottom: spacing.md,
+    },
+    montreal: {
+      ...typography.caption,
+      fontStyle: 'italic',
+      color: colors.textSecondary,
+      marginTop: spacing.sm,
     },
     preview: {
       marginTop: spacing.sm,

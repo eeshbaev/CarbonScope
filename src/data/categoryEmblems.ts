@@ -6,6 +6,14 @@ export type EmissionCategoryKey =
   | 'petrol'
   | 'naturalGas'
   | 'electricity'
+  | 'lpg'
+  | 'heatingOil'
+  | 'coal'
+  | 'refrigerants'
+  | 'evKm'
+  | 'districtHeat'
+  | 'steam'
+  | 'districtCooling'
   | Scope3FieldKey;
 
 const EMBLEMS: Record<EmissionCategoryKey, string> = {
@@ -13,6 +21,14 @@ const EMBLEMS: Record<EmissionCategoryKey, string> = {
   petrol: '🚗',
   naturalGas: '🔥',
   electricity: '⚡',
+  lpg: '🧯',
+  heatingOil: '🛢️',
+  coal: '⛏️',
+  refrigerants: '❄️',
+  evKm: '🔌',
+  districtHeat: '♨️',
+  steam: '💨',
+  districtCooling: '🧊',
   ...(Object.fromEntries(SCOPE3_FIELDS.map((f) => [f.key, f.emblem])) as Record<
     Scope3FieldKey,
     string

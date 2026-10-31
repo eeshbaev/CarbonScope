@@ -1,10 +1,10 @@
-import { EMISSION_FACTORS } from '../constants';
-import { SCOPE3_FIELDS, type Scope3FieldKey } from '../data/scope3Factors';
+import { computeAssessmentEmissions, type Scope1LineKey } from '../calculations';
+import type { Scope3FieldKey } from '../data/scope3Factors';
+import type { Scope2FieldKey } from '../types/scopeInputs';
 import { normalizeCompanyKey } from './companyIdentity';
 import { listReportingMonths } from './reportingMonths';
 import type { Locale } from '../i18n';
 import type { Assessment, ReportingPeriod } from '../types';
-import { resolveScope1Totals, resolveScope2Totals } from './scopeFieldInputs';
 
 export function filterCompanyAssessments(
   all: Assessment[],
@@ -163,37 +163,29 @@ export function buildCompanyTrend(
     });
 }
 
-export type EmissionDriverKey = 'diesel' | 'petrol' | 'naturalGas' | 'electricity' | Scope3FieldKey;
+export type EmissionDriverKey = Scope1LineKey | Scope2FieldKey | Scope3FieldKey | 'cat3FuelEnergy';
 
+/** Single largest emitting line across Scope 1, 2 (location-based) and 3. */
 export function getLargestEmissionDriver(assessment: Assessment): {
   key: EmissionDriverKey;
   emissionsT: number;
 } {
-  const s1 = resolveScope1Totals(assessment.scope1);
-  const factor = assessment.electricityFactor;
-
+  const e = computeAssessmentEmissions(assessment);
   const drivers: { key: EmissionDriverKey; emissionsT: number }[] = [
-    {
-      key: 'diesel',
-      emissionsT: (s1.dieselLiters * EMISSION_FACTORS.diesel) / 1000,
-    },
-    {
-      key: 'petrol',
-      emissionsT: (s1.petrolLiters * EMISSION_FACTORS.petrol) / 1000,
-    },
-    {
-      key: 'naturalGas',
-      emissionsT: (s1.naturalGasKwh * EMISSION_FACTORS.naturalGas) / 1000,
-    },
-    {
-      key: 'electricity',
-      emissionsT: (resolveScope2Totals(assessment.scope2).electricityKwh * factor) / 1000,
-    },
-    ...SCOPE3_FIELDS.map((f) => ({
-      key: f.key as EmissionDriverKey,
-      emissionsT: ((assessment.scope3?.[f.key] ?? 0) * f.factor) / 1000,
+    ...(Object.entries(e.scope1ByLine) as [Scope1LineKey, number][]).map(([key, v]) => ({
+      key,
+      emissionsT: v,
     })),
+    ...(Object.entries(e.scope2ByLine) as [Scope2FieldKey, number][]).map(([key, v]) => ({
+      key,
+      emissionsT: v,
+    })),
+    ...(Object.entries(e.scope3ByField) as [Scope3FieldKey, number][]).map(([key, v]) => ({
+      key,
+      emissionsT: v,
+    })),
+    { key: 'cat3FuelEnergy', emissionsT: e.scope3ByCategory.cat3FuelEnergy },
   ];
-
+  // Ties (e.g. all zero) resolve to the first line, matching the v1 behaviour (diesel).
   return drivers.reduce((best, d) => (d.emissionsT > best.emissionsT ? d : best), drivers[0]);
 }

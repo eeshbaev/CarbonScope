@@ -1,23 +1,21 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Switch, Text, View } from 'react-native';
 import { AssessmentNotesField } from '../components/AssessmentNotesField';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { CategoryLabel } from '../components/CategoryLabel';
+import { FormPicker } from '../components/FormPicker';
+import { NumberField } from '../components/NumberField';
 import { SavedToast } from '../components/SavedToast';
 import { ScreenLayout } from '../components/ScreenLayout';
-import {
-  calculateScope3ByCategory,
-  calculateScope3Emissions,
-  formatEmissions,
-} from '../calculations';
+import { computeEmissions, formatEmissions } from '../calculations';
 import { useAssessment } from '../context/AssessmentContext';
 import { useLanguage } from '../context/LanguageContext';
+import { CURRENCY_CODES, type CurrencyCode } from '../data/currencies';
 import {
   SCOPE3_CATEGORIES,
   SCOPE3_CATEGORY_NUMBER,
   getScope3FieldsForCategory,
+  type Scope3CategoryKey,
   type Scope3FieldDef,
 } from '../data/scope3Factors';
 import { useCalculateResults } from '../hooks/useCalculateResults';
@@ -26,68 +24,17 @@ import { useScreenTitle } from '../hooks/useScreenTitle';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import type { RootStackParamList } from '../navigation/types';
 import type { ReportingPeriod } from '../types';
+import type { Scope3Inputs } from '../types/scopeInputs';
 import { formatAppNumber } from '../utils/appLocale';
-import { parseNumberInput } from '../utils/parseNumberInput';
 import { getTco2eLabel } from '../utils/reportingPeriodCopy';
-import { colors, radii } from '../theme';
-import { scaleFontSize, scaleSize } from '../theme/scale';
+import { colors } from '../theme';
+import { scaleFontSize } from '../theme/scale';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Scope3'>;
 
-const parseNum = parseNumberInput;
-
-function Scope3FieldRow({
-  def,
-  value,
-  onChange,
-  styles,
-}: {
-  def: Scope3FieldDef;
-  value: number;
-  onChange: (next: number) => void;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  const { t, locale } = useLanguage();
-  const [display, setDisplay] = useState(value > 0 ? String(value) : '');
-  const label = t.scope3.fields[def.key];
-  const unit = t.scope3.units[def.unit];
-
-  // Keep the text box in sync when the draft is replaced (edit / duplicate).
-  useEffect(() => {
-    if (parseNum(display) !== value) setDisplay(value > 0 ? String(value) : '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  return (
-    <View style={styles.fieldRow}>
-      <CategoryLabel category={def.key} label={label} style={styles.fieldLabel} />
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={display}
-          onChangeText={(text) => {
-            setDisplay(text);
-            onChange(parseNum(text));
-          }}
-          placeholder="0"
-          placeholderTextColor={colors.textSecondary}
-          keyboardType="decimal-pad"
-          accessibilityLabel={`${label} (${unit})`}
-        />
-        <Text style={styles.unit}>{unit}</Text>
-      </View>
-      <Text style={styles.factorHint}>
-        {t.scope3.factorLine
-          .replace('{factor}', formatAppNumber(def.factor, locale))
-          .replace('{unit}', unit)}
-      </Text>
-    </View>
-  );
-}
-
 export function Scope3Screen({ navigation }: Props) {
   const { draft, updateDraft } = useAssessment();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const styles = useThemedStyles(createStyles);
   useScreenTitle(t.scope3.title);
   const { saving, savedVisible, saveProgress } = useSaveProgress();
@@ -95,8 +42,84 @@ export function Scope3Screen({ navigation }: Props) {
 
   const period = (draft.reportingPeriod || '1_year') as ReportingPeriod;
   const tco2eLabel = getTco2eLabel(t, period);
-  const preview = calculateScope3Emissions(draft.scope3);
-  const byCategory = calculateScope3ByCategory(draft.scope3);
+  const emissions = computeEmissions({
+    scope1: draft.scope1,
+    scope2: draft.scope2,
+    scope3: draft.scope3,
+    countryCode: draft.countryCode || 'US',
+  });
+  const currency = emissions.spendCurrency;
+  const setScope3 = (patch: Partial<Scope3Inputs>) =>
+    updateDraft({ scope3: { ...draft.scope3, ...patch } });
+
+  const unitFor = (def: Scope3FieldDef) =>
+    def.unit === 'currency' ? currency : t.scope3.units[def.unit];
+
+  const factorHint = (def: Scope3FieldDef) =>
+    def.unit === 'currency'
+      ? t.scope3.spendFactorLine.replace('{factor}', formatAppNumber(def.factor, locale))
+      : t.scope3.factorLine
+          .replace('{factor}', formatAppNumber(def.factor, locale))
+          .replace('{unit}', t.scope3.units[def.unit]);
+
+  const renderFields = (defs: Scope3FieldDef[]) =>
+    defs.map((def) => (
+      <NumberField
+        key={def.key}
+        emblem={def.key}
+        label={t.scope3.fields[def.key]}
+        value={draft.scope3[def.key] ?? 0}
+        unit={unitFor(def)}
+        hint={factorHint(def)}
+        onChange={(v) => setScope3({ [def.key]: v ?? 0 } as Partial<Scope3Inputs>)}
+      />
+    ));
+
+  const renderCategoryBody = (category: Scope3CategoryKey) => {
+    const defs = getScope3FieldsForCategory(category);
+    if (category === 'cat3FuelEnergy') {
+      return (
+        <>
+          <Text style={styles.sectionHint}>{t.scope3.cat3Hint}</Text>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t.scope3.cat3Toggle}</Text>
+            <Switch
+              value={draft.scope3.includeFuelEnergyUpstream}
+              onValueChange={(v) => setScope3({ includeFuelEnergyUpstream: v })}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={colors.white}
+            />
+          </View>
+        </>
+      );
+    }
+    if (category === 'cat1Purchased') {
+      const spend = defs.filter((d) => d.unit === 'currency');
+      const other = defs.filter((d) => d.unit !== 'currency');
+      return (
+        <>
+          <Text style={styles.subTitle}>{t.scope3.spendTitle}</Text>
+          <Text style={styles.sectionHint}>{t.scope3.spendHint}</Text>
+          <FormPicker
+            label={t.scope3.currencyLabel}
+            value={currency}
+            onValueChange={(v) => setScope3({ currency: v as CurrencyCode })}
+            items={CURRENCY_CODES.map((c) => ({ label: c, value: c }))}
+          />
+          {renderFields(spend)}
+          {renderFields(other)}
+        </>
+      );
+    }
+    return (
+      <>
+        {category === 'cat4Transport' ? (
+          <Text style={styles.sectionHint}>{t.scope3.freightHint}</Text>
+        ) : null}
+        {renderFields(defs)}
+      </>
+    );
+  };
 
   const footer = (
     <>
@@ -124,22 +147,12 @@ export function Scope3Screen({ navigation }: Props) {
               .replace('{number}', String(SCOPE3_CATEGORY_NUMBER[category]))
               .replace('{name}', t.scope3.categories[category])}
           </Text>
-          {getScope3FieldsForCategory(category).map((def) => (
-            <Scope3FieldRow
-              key={def.key}
-              def={def}
-              value={draft.scope3[def.key] ?? 0}
-              onChange={(next) =>
-                updateDraft({ scope3: { ...draft.scope3, [def.key]: next } })
-              }
-              styles={styles}
-            />
-          ))}
+          {renderCategoryBody(category)}
           <View style={styles.subtotalRow}>
             <Text style={styles.subtotalLabel}>{t.scope3.subtotal}</Text>
             <Text style={styles.subtotalValue}>
-              {byCategory[category] > 0
-                ? `${formatEmissions(byCategory[category])} ${tco2eLabel}`
+              {emissions.scope3ByCategory[category] > 0
+                ? `${formatEmissions(emissions.scope3ByCategory[category])} ${tco2eLabel}`
                 : '—'}
             </Text>
           </View>
@@ -152,7 +165,7 @@ export function Scope3Screen({ navigation }: Props) {
       <Card style={styles.preview}>
         <Text style={styles.previewLabel}>{t.scope3.preview}</Text>
         <Text style={styles.previewValue}>
-          {formatEmissions(preview)} {tco2eLabel}
+          {formatEmissions(emissions.scope3)} {tco2eLabel}
         </Text>
       </Card>
       <SavedToast visible={savedVisible} message={t.scopeInputs.saved} />
@@ -160,7 +173,7 @@ export function Scope3Screen({ navigation }: Props) {
   );
 }
 
-function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSlice) {
+function createStyles({ typography, spacing, fontScale }: ThemeSlice) {
   return StyleSheet.create({
     noteCard: {
       marginBottom: spacing.md,
@@ -170,7 +183,6 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
     noteText: {
       ...typography.caption,
       color: colors.primary,
-      lineHeight: scaleSize(19, displayScale),
     },
     source: {
       ...typography.caption,
@@ -187,44 +199,31 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
       color: colors.primary,
       marginBottom: spacing.sm,
     },
-    fieldRow: {
-      paddingVertical: spacing.sm,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
+    subTitle: {
+      ...typography.body,
+      fontSize: scaleFontSize(14, fontScale),
+      fontWeight: '700',
+      color: colors.text,
     },
-    fieldLabel: {
+    sectionHint: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+      marginBottom: spacing.sm,
+    },
+    toggleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+    },
+    toggleLabel: {
       ...typography.body,
       fontSize: scaleFontSize(14, fontScale),
       fontWeight: '600',
       color: colors.text,
-    },
-    inputRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-      marginTop: spacing.sm,
-    },
-    input: {
       flex: 1,
-      backgroundColor: colors.white,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: radii.md,
-      paddingHorizontal: spacing.md,
-      paddingVertical: scaleSize(10, displayScale),
-      fontSize: scaleFontSize(16, fontScale),
-      color: colors.text,
-    },
-    unit: {
-      ...typography.caption,
-      minWidth: scaleSize(90, displayScale),
-      color: colors.textSecondary,
-      fontWeight: '600',
-    },
-    factorHint: {
-      ...typography.caption,
-      marginTop: spacing.xs,
-      color: colors.textSecondary,
+      marginRight: spacing.md,
     },
     subtotalRow: {
       flexDirection: 'row',

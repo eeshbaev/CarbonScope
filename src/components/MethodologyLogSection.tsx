@@ -46,6 +46,7 @@ export function MethodologyLogSection({
             <Text style={styles.meta}>
               {formatAppDateTime(new Date(e.timestamp), locale)} · {actionLabel(e.action)} · v
               {e.factorVersion} · {e.factorYear}
+              {e.fuelFactorVersion ? ` · fuels v${e.fuelFactorVersion}` : ''}
             </Text>
             <Text style={styles.meta}>
               {ml.factorLine

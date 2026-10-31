@@ -5,9 +5,15 @@ import { Card } from './Card';
 import { CategoryLabel } from './CategoryLabel';
 import type { EmissionCategoryKey } from '../data/categoryEmblems';
 import { MethodologyLogSection } from './MethodologyLogSection';
-import { calculateScope3ByCategory, formatEmissions } from '../calculations';
-import { SCOPE3_CATEGORIES, SCOPE3_CATEGORY_NUMBER, SCOPE3_FIELDS } from '../data/scope3Factors';
-import { formatAppNumber } from '../utils/appLocale';
+import { formatEmissions } from '../calculations';
+import { FUEL_FACTOR_DATASET } from '../data/fuelFactors';
+import {
+  buildGasRows,
+  buildInputRows,
+  describeMarketBasis,
+  reportBreakdown,
+} from '../utils/reportRows';
+import { SCOPE3_CATEGORIES, SCOPE3_CATEGORY_NUMBER } from '../data/scope3Factors';
 import { countryCodeToFlag } from '../data/countries';
 import type { IndustryKey } from '../data/industries';
 import type { TranslationKeys } from '../i18n/locales/en';
@@ -15,8 +21,6 @@ import type { Locale } from '../i18n';
 import { getIndustryLabel } from '../i18n/packs/industryLabels';
 import { getLocalizedCountryName } from '../utils/localizeCountry';
 import type { Assessment } from '../types';
-import { resolveScope1Totals, resolveScope2Totals } from '../utils/scopeFieldInputs';
-import { formatResolvedInputLine } from '../utils/scopeInputDisplay';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors } from '../theme';
 import { scaleFontSize, scaleSize } from '../theme/scale';
@@ -88,8 +92,13 @@ export function EmissionReportContent({
 }: Props) {
   const styles = useThemedStyles(createStyles);
   const hasScope3 = (assessment.scope3Emissions ?? 0) > 0;
-  const scope3ByCategory = calculateScope3ByCategory(assessment.scope3);
-  const scope3Lines = SCOPE3_FIELDS.filter((f) => (assessment.scope3[f.key] ?? 0) > 0);
+  const breakdown = reportBreakdown(assessment);
+  const scope3ByCategory = breakdown.scope3ByCategory;
+  const inputRows = buildInputRows(assessment, t, locale, breakdown.spendCurrency);
+  const gasRows = buildGasRows(assessment, breakdown, t, tco2eLabel);
+  const marketDiffers =
+    Math.abs((assessment.scope2MarketEmissions ?? assessment.scope2Emissions) - assessment.scope2Emissions) >
+    0.00005;
 
   return (
     <>
@@ -115,6 +124,14 @@ export function EmissionReportContent({
           <Text style={styles.scopeLabel}>{t.results.scope2Indirect}</Text>
           <Text style={[styles.scopeValue, hasScope3 && styles.scopeValueCompact]} adjustsFontSizeToFit numberOfLines={1}>{formatEmissions(assessment.scope2Emissions)}</Text>
           <Text style={styles.scopeUnit}>{tco2eLabel}</Text>
+          {marketDiffers ? (
+            <Text style={styles.scopeMarket}>
+              {t.results.scope2MarketLine.replace(
+                '{value}',
+                formatEmissions(assessment.scope2MarketEmissions)
+              )}
+            </Text>
+          ) : null}
         </Card>
         {hasScope3 ? (
           <Card style={styles.scopeCard}>
@@ -139,6 +156,39 @@ export function EmissionReportContent({
               styles={styles}
             />
           ))}
+        </Card>
+      ) : null}
+
+      {assessment.scope1Emissions > 0 ? (
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.results.scope1ByGasTitle}</Text>
+          {gasRows.map((r, i) => (
+            <SummaryRow
+              key={r.key}
+              label={r.label}
+              value={r.value}
+              last={i === gasRows.length - 1}
+              styles={styles}
+            />
+          ))}
+          <Text style={styles.footnote}>
+            {assessment.scope1ByGas
+              ? t.results.gwpBasis.replace('{basis}', FUEL_FACTOR_DATASET.gwpBasis)
+              : t.results.legacyFactorsNote}
+          </Text>
+        </Card>
+      ) : null}
+
+      {marketDiffers ? (
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.results.scope2DualTitle}</Text>
+          <Text style={styles.bodyText}>
+            {t.results.scope2DualBody
+              .replace('{location}', formatEmissions(assessment.scope2Emissions))
+              .replace('{market}', formatEmissions(assessment.scope2MarketEmissions))
+              .replace(/\{unit\}/g, tco2eLabel)}
+          </Text>
+          <Text style={styles.footnote}>{describeMarketBasis(assessment, t, locale)}</Text>
         </Card>
       ) : null}
 
@@ -181,64 +231,12 @@ export function EmissionReportContent({
           value={periodRangeLabel ?? t.reportingPeriods[assessment.reportingPeriod]}
           styles={styles}
         />
-        <SummaryRow
-          category="diesel"
-          label={t.scope1.diesel}
-          value={formatResolvedInputLine(
-            resolveScope1Totals(assessment.scope1).dieselLiters,
-            'fuel',
-            assessment.reportingPeriod,
-            assessment.scope1.diesel.useMonthly,
-            t,
-            locale
-          )}
-          styles={styles}
-        />
-        <SummaryRow
-          category="petrol"
-          label={t.scope1.petrol}
-          value={formatResolvedInputLine(
-            resolveScope1Totals(assessment.scope1).petrolLiters,
-            'fuel',
-            assessment.reportingPeriod,
-            assessment.scope1.petrol.useMonthly,
-            t,
-            locale
-          )}
-          styles={styles}
-        />
-        <SummaryRow
-          category="naturalGas"
-          label={t.scope1.naturalGas}
-          value={formatResolvedInputLine(
-            resolveScope1Totals(assessment.scope1).naturalGasKwh,
-            'gas',
-            assessment.reportingPeriod,
-            assessment.scope1.naturalGas.useMonthly,
-            t,
-            locale
-          )}
-          styles={styles}
-        />
-        <SummaryRow
-          category="electricity"
-          label={t.scope2.electricity}
-          value={formatResolvedInputLine(
-            resolveScope2Totals(assessment.scope2).electricityKwh,
-            'electricity',
-            assessment.reportingPeriod,
-            assessment.scope2.electricity.useMonthly,
-            t,
-            locale
-          )}
-          styles={styles}
-        />
-        {scope3Lines.map((f) => (
+        {inputRows.map((r) => (
           <SummaryRow
-            key={f.key}
-            category={f.key}
-            label={t.scope3.fields[f.key]}
-            value={`${formatAppNumber(assessment.scope3[f.key], locale)} ${t.scope3.units[f.unit]}`}
+            key={r.key}
+            category={r.category}
+            label={r.label}
+            value={r.value}
             styles={styles}
           />
         ))}
@@ -332,6 +330,22 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
   },
   scopeValueCompact: {
     fontSize: scaleFontSize(21, fontScale),
+  },
+  scopeMarket: {
+    ...typography.caption,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+    fontSize: scaleFontSize(11, fontScale),
+  },
+  footnote: {
+    ...typography.caption,
+    fontStyle: 'italic',
+    marginTop: spacing.sm,
+  },
+  bodyText: {
+    ...typography.body,
+    fontSize: scaleFontSize(14, fontScale),
+    color: colors.textSecondary,
   },
   scopeUnit: {
     ...typography.caption,

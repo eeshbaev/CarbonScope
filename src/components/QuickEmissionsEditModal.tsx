@@ -31,8 +31,6 @@ import {
 } from '../utils/evidenceHelpers';
 import {
   getReportingMonthsForDraft,
-  setScope1Field,
-  setScope2Field,
   updateCategoryMonth,
   updateCategoryTotal,
 } from '../utils/scopeFieldInputs';
@@ -48,9 +46,17 @@ import { FormPicker } from './FormPicker';
 import { InfoCircleButton } from './InfoCircleButton';
 import { InfoHintModal } from './InfoHintModal';
 import { UnitInput } from './UnitInput';
-import { getInputHint, type InputHintField } from '../i18n/packs/inputHints';
+import {
+  CATEGORY_LINES,
+  getCategoryLine,
+  getLineInput,
+  setLineInput,
+  type CategoryLineKey,
+} from '../data/inputLines';
+import type { UnitKind } from '../units';
+import { lineInfoText, lineLabel } from '../utils/lineLabels';
 
-export type QuickLineKey = 'diesel' | 'petrol' | 'naturalGas' | 'electricity';
+export type QuickLineKey = CategoryLineKey;
 
 interface QuickEmissionsEditModalProps {
   visible: boolean;
@@ -59,31 +65,12 @@ interface QuickEmissionsEditModalProps {
   onSaved: () => void;
 }
 
-function getLineInput(d: AssessmentDraft, line: QuickLineKey): CategoryInput {
-  if (line === 'electricity') return d.scope2.electricity;
-  return d.scope1[line];
-}
-
-function setLineInput(d: AssessmentDraft, line: QuickLineKey, cat: CategoryInput): AssessmentDraft {
-  if (line === 'electricity') {
-    return { ...d, scope2: setScope2Field(d.scope2, cat) };
-  }
-  return { ...d, scope1: setScope1Field(d.scope1, line, cat) };
-}
-
 function evidenceCategoryForLine(line: QuickLineKey): EvidenceCategory {
-  if (line === 'naturalGas') return 'gas';
-  return line;
+  return getCategoryLine(line).evidence;
 }
 
-function hintFieldForLine(line: QuickLineKey): InputHintField {
-  return line === 'naturalGas' ? 'naturalGas' : line;
-}
-
-function unitKindForLine(line: QuickLineKey): 'fuel' | 'gas' | 'electricity' {
-  if (line === 'electricity') return 'electricity';
-  if (line === 'naturalGas') return 'gas';
-  return 'fuel';
+function unitKindForLine(line: QuickLineKey): UnitKind {
+  return getCategoryLine(line).kind;
 }
 
 export function QuickEmissionsEditModal({
@@ -139,19 +126,12 @@ export function QuickEmissionsEditModal({
     busySlot === buildEvidenceSlotKey(evidenceCategoryForLine(line), effectiveMonthKey);
 
   const categoryItems = useMemo(
-    () => [
-      { value: 'diesel' as const, label: formatCategoryLabel(t.scope1.diesel, 'diesel') },
-      { value: 'petrol' as const, label: formatCategoryLabel(t.scope1.petrol, 'petrol') },
-      {
-        value: 'naturalGas' as const,
-        label: formatCategoryLabel(t.scope1.naturalGas, 'naturalGas'),
-      },
-      {
-        value: 'electricity' as const,
-        label: formatCategoryLabel(t.scope2.electricity, 'electricity'),
-      },
-    ],
-    [t.scope1.diesel, t.scope1.petrol, t.scope1.naturalGas, t.scope2.electricity]
+    () =>
+      CATEGORY_LINES.map((l) => ({
+        value: l.key,
+        label: formatCategoryLabel(lineLabel(t, l.key), l.key),
+      })),
+    [t]
   );
 
   const monthItems = useMemo(
@@ -254,7 +234,7 @@ export function QuickEmissionsEditModal({
   if (!assessment) return null;
 
   const industryForHint = (draft?.industry || DEFAULT_INDUSTRY) as IndustryKey;
-  const infoMessage = getInputHint(locale, industryForHint, hintFieldForLine(line));
+  const infoMessage = lineInfoText(t, locale, industryForHint, line);
   const eCat = evidenceCategoryForLine(line);
   const mKey = cat?.useMonthly ? effectiveMonthKey : undefined;
   const doc = getEvidenceForSlot(localEvidence, eCat, mKey);
@@ -317,7 +297,7 @@ export function QuickEmissionsEditModal({
                   }
                   kind={unitKindForLine(line)}
                   industry={industry}
-                  infoField={hintFieldForLine(line)}
+                  infoField={getCategoryLine(line).hintField}
                   timePeriod={cat?.useMonthly ? 'month' : 'year'}
                   standardValue={
                     cat?.useMonthly && monthKey

@@ -1,11 +1,7 @@
 import { assessmentToDraft } from '../calculations';
 import { monthsForPeriod, parseISODate, toISODateString } from './reportingDates';
-import { emptyCategoryInput, emptyScope3 } from '../types/scopeInputs';
+import { emptyScope1V2, emptyScope2V2, emptyScope3 } from '../types/scopeInputs';
 import type { Assessment, AssessmentDraft } from '../types';
-
-function clearedCategory() {
-  return emptyCategoryInput();
-}
 
 /** Copy company profile and structure; clear all fuel/electricity/value-chain amounts for the next reporting period. */
 export function duplicateForNextPeriod(source: Assessment): AssessmentDraft {
@@ -28,15 +24,14 @@ export function duplicateForNextPeriod(source: Assessment): AssessmentDraft {
     industry: draft.industry,
     reportingPeriod: draft.reportingPeriod,
     reportingStartDate: nextStart,
-    scope1: {
-      diesel: clearedCategory(),
-      petrol: clearedCategory(),
-      naturalGas: clearedCategory(),
+    // Keep market-based instrument settings (supplier contracts usually carry over); clear amounts.
+    scope1: emptyScope1V2(),
+    scope2: { ...emptyScope2V2(), market: { ...draft.scope2.market, renewableKwh: 0 } },
+    scope3: {
+      ...emptyScope3(),
+      currency: draft.scope3.currency,
+      includeFuelEnergyUpstream: draft.scope3.includeFuelEnergyUpstream,
     },
-    scope2: {
-      electricity: clearedCategory(),
-    },
-    scope3: emptyScope3(),
     notes: '',
   };
 }

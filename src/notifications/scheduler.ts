@@ -1,4 +1,6 @@
 import * as Notifications from 'expo-notifications';
+import { CATEGORY_LINES, getLineInput } from '../data/inputLines';
+import { lineLabel } from '../utils/lineLabels';
 import { Platform } from 'react-native';
 import type { TranslationKeys } from '../i18n/locales/en';
 import type { Locale } from '../i18n';
@@ -65,32 +67,20 @@ function nthDayOfMonth(year: number, monthIndex: number, day: number): Date {
 }
 
 function getMonthlyCategoryLabels(assessment: Assessment, t: TranslationKeys): string[] {
-  const labels: string[] = [];
-  if (assessment.scope1.diesel.useMonthly) labels.push(t.scope1.diesel);
-  if (assessment.scope1.petrol.useMonthly) labels.push(t.scope1.petrol);
-  if (assessment.scope1.naturalGas.useMonthly) labels.push(t.scope1.naturalGas);
-  if (assessment.scope2.electricity.useMonthly) labels.push(t.scope2.electricity);
-  return labels;
+  return CATEGORY_LINES.filter((l) => getLineInput(assessment, l.key).useMonthly).map((l) =>
+    lineLabel(t, l.key)
+  );
 }
 
 function hasMonthlyMode(assessment: Assessment): boolean {
   if (!supportsMonthlyEntry(assessment.reportingPeriod)) return false;
-  return (
-    assessment.scope1.diesel.useMonthly ||
-    assessment.scope1.petrol.useMonthly ||
-    assessment.scope1.naturalGas.useMonthly ||
-    assessment.scope2.electricity.useMonthly
-  );
+  return CATEGORY_LINES.some((l) => getLineInput(assessment, l.key).useMonthly);
 }
 
 function monthNeedsMonthlyEntry(assessment: Assessment, monthKey: string): boolean {
-  const fields = [
-    assessment.scope1.diesel,
-    assessment.scope1.petrol,
-    assessment.scope1.naturalGas,
-    assessment.scope2.electricity,
-  ];
-  return fields.some((f) => f.useMonthly && !(f.monthly[monthKey] > 0));
+  return CATEGORY_LINES.map((l) => getLineInput(assessment, l.key)).some(
+    (f) => f.useMonthly && !(f.monthly[monthKey] > 0)
+  );
 }
 
 function prepareNotificationDate(date: Date): Date {

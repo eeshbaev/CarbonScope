@@ -19,7 +19,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: 'Промежуточный итог',
       factorLine: '{factor} кг CO₂э на {unit}',
       categories: {
-        cat1Water: 'Закупаемые товары и услуги (вода)',
         cat5Waste: 'Отходы операционной деятельности',
         cat6Travel: 'Деловые поездки',
         cat7Commuting: 'Поездки сотрудников на работу',
@@ -69,7 +68,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: 'Sous-total',
       factorLine: '{factor} kg CO₂e par {unit}',
       categories: {
-        cat1Water: 'Biens et services achetés (eau)',
         cat5Waste: 'Déchets générés par les activités',
         cat6Travel: 'Déplacements professionnels',
         cat7Commuting: 'Trajets domicile-travail',
@@ -119,7 +117,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: 'Zwischensumme',
       factorLine: '{factor} kg CO₂e pro {unit}',
       categories: {
-        cat1Water: 'Eingekaufte Waren und Dienstleistungen (Wasser)',
         cat5Waste: 'Abfall aus dem Betrieb',
         cat6Travel: 'Geschäftsreisen',
         cat7Commuting: 'Pendeln der Mitarbeitenden',
@@ -169,7 +166,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: 'Subtotale',
       factorLine: '{factor} kg CO₂e per {unit}',
       categories: {
-        cat1Water: 'Beni e servizi acquistati (acqua)',
         cat5Waste: 'Rifiuti generati dalle attività',
         cat6Travel: 'Viaggi di lavoro',
         cat7Commuting: 'Pendolarismo dei dipendenti',
@@ -217,7 +213,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: '小計',
       factorLine: '{unit}あたり {factor} kg CO₂e',
       categories: {
-        cat1Water: '購入した製品・サービス（水）',
         cat5Waste: '事業から出る廃棄物',
         cat6Travel: '出張',
         cat7Commuting: '雇用者の通勤',
@@ -265,7 +260,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: '小计',
       factorLine: '每{unit} {factor} kg CO₂e',
       categories: {
-        cat1Water: '外购商品和服务（水）',
         cat5Waste: '运营中产生的废弃物',
         cat6Travel: '商务差旅',
         cat7Commuting: '员工通勤',
@@ -315,7 +309,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: 'Subtotal',
       factorLine: '{factor} kg CO₂e por {unit}',
       categories: {
-        cat1Water: 'Bienes y servicios adquiridos (agua)',
         cat5Waste: 'Residuos generados en las operaciones',
         cat6Travel: 'Viajes de negocio',
         cat7Commuting: 'Desplazamiento de empleados',
@@ -365,7 +358,6 @@ export const SCOPE3_PACKS: Record<string, DeepPartial<TranslationKeys>> = {
       subtotal: 'Subtotal',
       factorLine: '{factor} kg CO₂e por {unit}',
       categories: {
-        cat1Water: 'Bens e serviços adquiridos (água)',
         cat5Waste: 'Resíduos gerados nas operações',
         cat6Travel: 'Viagens a negócios',
         cat7Commuting: 'Deslocamento de funcionários',

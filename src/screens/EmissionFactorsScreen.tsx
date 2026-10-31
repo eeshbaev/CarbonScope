@@ -21,6 +21,18 @@ import {
   isCustomElectricityFactor,
 } from '../data/emissionFactors';
 import { useLanguage } from '../context/LanguageContext';
+import {
+  FUEL_FACTORS,
+  FUEL_FACTOR_DATASET,
+  HEAT_FACTORS,
+  REFRIGERANTS,
+  SCOPE1_FUELS,
+  fuelFactorTotal,
+} from '../data/fuelFactors';
+import { getCategoryLine } from '../data/inputLines';
+import { formatAppNumber } from '../utils/appLocale';
+import { lineLabel } from '../utils/lineLabels';
+import { standardUnitAbbr } from '../utils/unitLabels';
 import { useScreenTitle } from '../hooks/useScreenTitle';
 import type { RootStackParamList } from '../navigation/types';
 import {
@@ -93,6 +105,54 @@ export function EmissionFactorsScreen({ navigation }: Props) {
         data={ALL_COUNTRIES}
         keyExtractor={(c) => c.code}
         style={styles.list}
+        ListHeaderComponent={
+          <View style={styles.fuelCard}>
+            <Text style={styles.fuelTitle}>{t.settings.fuelFactorsTitle}</Text>
+            <Text style={styles.meta}>
+              {t.settings.fuelFactorsVersion
+                .replace('{version}', FUEL_FACTOR_DATASET.version)
+                .replace('{year}', FUEL_FACTOR_DATASET.referenceYear)
+                .replace('{gwp}', FUEL_FACTOR_DATASET.gwpBasis)}
+            </Text>
+            {SCOPE1_FUELS.map((k) => {
+              const f = FUEL_FACTORS[k];
+              const unit = standardUnitAbbr(t, getCategoryLine(k).kind);
+              return (
+                <View key={k} style={styles.fuelRow}>
+                  <Text style={styles.name}>
+                    {lineLabel(t, k)} — {formatAppNumber(fuelFactorTotal(k), locale)}{' '}
+                    {t.common.kgCo2e}/{unit}
+                  </Text>
+                  <Text style={styles.factor}>
+                    {t.settings.fuelFactorsSplit
+                      .replace('{co2}', formatAppNumber(f.co2, locale))
+                      .replace('{ch4}', formatAppNumber(f.ch4, locale))
+                      .replace('{n2o}', formatAppNumber(f.n2o, locale))}
+                  </Text>
+                </View>
+              );
+            })}
+            <View style={styles.fuelRow}>
+              <Text style={styles.name}>{t.scope1.refrigerantsShort} (GWP)</Text>
+              <Text style={styles.factor}>
+                {REFRIGERANTS.map((r) => `${r.label} ${r.gwp}`).join(' · ')}
+              </Text>
+            </View>
+            <View style={styles.fuelRow}>
+              <Text style={styles.name}>
+                {t.scope2.districtHeat} / {t.scope2.steam}
+              </Text>
+              <Text style={styles.factor}>
+                {HEAT_FACTORS.districtHeat} {t.common.kgCo2e}
+                {t.units.perKwh}
+              </Text>
+            </View>
+            <Text style={styles.meta}>
+              {t.settings.factorsSources}: {FUEL_FACTOR_DATASET.sources}
+            </Text>
+            <Text style={[styles.fuelTitle, styles.gridTitle]}>{t.settings.gridFactorsTitle}</Text>
+          </View>
+        }
         renderItem={({ item }) => {
           const factor = getElectricityFactorForCountry(item.code);
           const isCustom = isCustomElectricityFactor(item.code);
@@ -163,6 +223,23 @@ export function EmissionFactorsScreen({ navigation }: Props) {
 
 function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSlice) {
   return StyleSheet.create({
+    fuelCard: {
+      paddingBottom: spacing.md,
+    },
+    fuelTitle: {
+      ...typography.subtitle,
+      color: colors.primary,
+      marginTop: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    gridTitle: {
+      marginTop: spacing.lg,
+    },
+    fuelRow: {
+      paddingVertical: spacing.sm,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
     flex: {
       flex: 1,
     },

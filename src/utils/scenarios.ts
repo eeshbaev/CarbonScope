@@ -1,9 +1,5 @@
-import {
-  calculateScope1Emissions,
-  calculateScope2Emissions,
-} from '../calculations';
+import { computeEmissions } from '../calculations';
 import type { Assessment } from '../types';
-import { resolveScope1Totals, resolveScope2Totals } from './scopeFieldInputs';
 
 export type ScenarioAdjustments = {
   electricityPct: number;
@@ -51,7 +47,8 @@ export function computeScenarioTotals(
   assessment: Assessment,
   adj: ScenarioAdjustments
 ): { scope1: number; scope2: number; scope3: number; total: number } {
-  let scope1Inputs = {
+  let scope1Inputs: Assessment['scope1'] = {
+    ...assessment.scope1,
     diesel: scaleCategory(assessment.scope1.diesel, adj.dieselPct),
     petrol: scaleCategory(assessment.scope1.petrol, adj.petrolPct),
     naturalGas: scaleCategory(assessment.scope1.naturalGas, adj.gasPct),
@@ -60,22 +57,23 @@ export function computeScenarioTotals(
     scope1Inputs = applyFleetEv(scope1Inputs, adj.fleetEvPct);
   }
 
-  const scope2Inputs = {
+  const scope2Inputs: Assessment['scope2'] = {
+    ...assessment.scope2,
     electricity: scaleCategory(assessment.scope2.electricity, adj.electricityPct),
   };
 
-  const scope1 = calculateScope1Emissions(scope1Inputs);
-  let scope2: number;
-  if (adj.customGridFactor != null && adj.customGridFactor > 0) {
-    const { electricityKwh } = resolveScope2Totals(scope2Inputs);
-    scope2 = (electricityKwh * adj.customGridFactor) / 1000;
-  } else {
-    scope2 = calculateScope2Emissions(scope2Inputs, assessment.countryCode);
-  }
-
-  // Scenario levers act on Scope 1 & 2; Scope 3 is carried through unchanged.
-  const scope3 = assessment.scope3Emissions ?? 0;
-  return { scope1, scope2, scope3, total: scope1 + scope2 + scope3 };
+  // Same grid factor as the saved report unless the user models a different one.
+  const e = computeEmissions({
+    scope1: scope1Inputs,
+    scope2: scope2Inputs,
+    scope3: assessment.scope3,
+    countryCode: assessment.countryCode,
+    gridFactorOverride:
+      adj.customGridFactor != null && adj.customGridFactor > 0
+        ? adj.customGridFactor
+        : assessment.electricityFactor,
+  });
+  return { scope1: e.scope1, scope2: e.scope2Location, scope3: e.scope3, total: e.total };
 }
 
 export function getBaselineTotals(assessment: Assessment) {

@@ -41,9 +41,16 @@ export interface Assessment {
   scope1Emissions: number;
   scope2Emissions: number;
   scope3Emissions: number;
-  /** Scope 1 + 2 + 3. */
+  /** Market-based Scope 2 (reported alongside the location-based figure). */
+  scope2MarketEmissions: number;
+  /** Scope 1 split by greenhouse gas at calculation time (tCO₂e). */
+  scope1ByGas?: { co2: number; ch4: number; n2o: number; hfc: number };
+  /** Scope 1 + location-based Scope 2 + Scope 3. */
   totalEmissions: number;
+  /** Location-based grid factor applied (kg CO₂e/kWh). */
   electricityFactor: number;
+  /** Fuel / refrigerant factor dataset version used (absent = pre-2026.2 data). */
+  fuelFactorVersion?: string;
   updatedAt: string;
   /** True when saved via Save progress only (not Calculate Results). */
   isDraft?: boolean;
@@ -99,11 +106,11 @@ export interface ResolvedScope2Totals {
 }
 
 export function normalizeScope1Inputs(raw: unknown): Scope1Inputs {
-  return migrateScope1Inputs((raw ?? {}) as Parameters<typeof migrateScope1Inputs>[0]);
+  return migrateScope1Inputs(raw);
 }
 
 export function normalizeScope2Inputs(raw: unknown): Scope2Inputs {
-  return migrateScope2Inputs((raw ?? {}) as Parameters<typeof migrateScope2Inputs>[0]);
+  return migrateScope2Inputs(raw);
 }
 
 export const emptyDraft = (): AssessmentDraft => ({
@@ -141,6 +148,15 @@ export function normalizeAssessment(raw: Assessment): Assessment {
       typeof raw.scope3Emissions === 'number' && Number.isFinite(raw.scope3Emissions)
         ? raw.scope3Emissions
         : 0,
+    // Older reports had electricity only and no instruments: market = location.
+    scope2MarketEmissions:
+      typeof raw.scope2MarketEmissions === 'number' && Number.isFinite(raw.scope2MarketEmissions)
+        ? raw.scope2MarketEmissions
+        : raw.scope2Emissions ?? 0,
+    scope1ByGas:
+      raw.scope1ByGas && typeof raw.scope1ByGas === 'object' ? raw.scope1ByGas : undefined,
+    fuelFactorVersion:
+      typeof raw.fuelFactorVersion === 'string' ? raw.fuelFactorVersion : undefined,
     notes: typeof raw.notes === 'string' ? raw.notes : '',
     selectedInitiatives: Array.isArray(raw.selectedInitiatives)
       ? (raw.selectedInitiatives as InitiativeKey[])

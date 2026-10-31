@@ -8,7 +8,20 @@ export interface ReductionTarget {
   year?: number;
 }
 
-export type EvidenceCategory = 'electricity' | 'diesel' | 'petrol' | 'gas' | 'general';
+export type EvidenceCategory =
+  | 'electricity'
+  | 'diesel'
+  | 'petrol'
+  | 'gas'
+  | 'lpg'
+  | 'heatingOil'
+  | 'coal'
+  | 'refrigerants'
+  | 'ev'
+  | 'heat'
+  | 'steam'
+  | 'cooling'
+  | 'general';
 
 export interface EvidenceItem {
   id: string;
@@ -44,6 +57,8 @@ export interface MethodologyLogEntry {
   action: MethodologyLogAction;
   factorVersion: string;
   factorYear: string;
+  /** Fuel / refrigerant / Scope 3 factor dataset (absent on pre-2026.2 entries). */
+  fuelFactorVersion?: string;
   electricityFactor: number;
   customFactor: boolean;
   appVersion: string;

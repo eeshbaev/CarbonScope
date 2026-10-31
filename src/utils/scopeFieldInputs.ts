@@ -13,7 +13,8 @@ export function sumMonthlyValues(monthly: Record<string, number>): number {
   return Object.values(monthly).reduce((acc, v) => acc + (Number.isFinite(v) ? v : 0), 0);
 }
 
-export function resolveCategoryTotal(input: CategoryInput): number {
+export function resolveCategoryTotal(input: CategoryInput | undefined): number {
+  if (!input) return 0;
   if (input.useMonthly) {
     return sumMonthlyValues(input.monthly);
   }
@@ -42,8 +43,12 @@ export function setScope1Field(
   return { ...scope1, [field]: next };
 }
 
-export function setScope2Field(scope2: Scope2Inputs, next: CategoryInput): Scope2Inputs {
-  return { ...scope2, electricity: next };
+export function setScope2Field(
+  scope2: Scope2Inputs,
+  field: Scope2FieldKey,
+  next: CategoryInput
+): Scope2Inputs {
+  return { ...scope2, [field]: next };
 }
 
 export function toggleCategoryMonthly(

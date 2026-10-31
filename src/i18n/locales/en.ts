@@ -62,6 +62,10 @@ export const en = {
       'Grid electricity factors (kg CO₂e/kWh) by country. Defaults from public datasets; you may override any country.',
     factorsVersion: 'Dataset version {version} · reference year {year}',
     factorsSources: 'Sources',
+    fuelFactorsTitle: 'Fuel, refrigerant & heat factors',
+    fuelFactorsVersion: 'Dataset {version} · reference year {year} · {gwp}',
+    fuelFactorsSplit: 'CO₂ {co2} + CH₄ {ch4} + N₂O {n2o}',
+    gridFactorsTitle: 'Grid electricity by country (Scope 2, location-based)',
     editFactor: 'Edit',
     resetFactor: 'Reset to default',
     factorEditTitle: 'Grid factor for {country}',
@@ -314,6 +318,31 @@ export const en = {
     factorDiesel: '2.68 kg CO₂e/liter',
     factorPetrol: '2.31 kg CO₂e/liter',
     factorGas: '0.183 kg CO₂e/kWh',
+    lpg: 'LPG (propane / butane)',
+    heatingOil: 'Heating oil / kerosene',
+    coal: 'Coal',
+    otherFuelsTitle: 'Other fuels',
+    otherFuelsHint: 'Only fill these in if your company burns them on site or in its own vehicles.',
+    refrigerantsTitle: 'Refrigerant leaks (fugitive emissions)',
+    refrigerantsShort: 'Refrigerant leaks',
+    refrigerantsHint:
+      'Enter the kg of refrigerant topped up into air conditioning, heat pumps, chillers and fridges during the period (from service records). Top-ups replace gas that leaked out.',
+    refrigerantGwp: 'GWP {gwp} — 1 kg = {gwp} kg CO₂e',
+    refrigerantMontreal:
+      'R-22 and other HCFCs/CFCs are controlled under the Montreal Protocol and are reported separately, not in Scope 1.',
+  },
+  lineHints: {
+    lpg: 'Litres of LPG delivered or bottles bought (a 47 kg bottle ≈ 90 L). Use supplier invoices; forklifts and patio heaters count too.',
+    heatingOil:
+      'Litres of heating oil, kerosene or gas oil burned in boilers, heaters or generators, from delivery notes.',
+    coal: 'Kilograms or tonnes of coal burned on site, from delivery tickets or weighbridge records.',
+    evKm:
+      'Kilometres driven by company-owned electric vehicles that were charged away from your own meters (public chargers, employees’ homes). Charging on your site is already in your electricity bill. Converted at 0.18 kWh/km.',
+    districtHeat:
+      'kWh of heat delivered by a district heating network, from the heat meter or supplier invoice. Default factor 0.179 kg CO₂e/kWh — use the market-based section below for your supplier’s own factor.',
+    steam: 'kWh of purchased steam (convert from tonnes using your supplier’s energy content). Default factor 0.179 kg CO₂e/kWh.',
+    districtCooling:
+      'kWh of chilled water / cooling delivered by a district cooling network. Estimated as electric chillers: grid factor ÷ 4.',
   },
   scope2: {
     title: 'Scope 2 — Indirect Emissions',
@@ -325,10 +354,36 @@ export const en = {
     preview: 'Scope 2 preview',
     calculate: 'Calculate Results',
     continueScope3: 'Continue to Scope 3',
+    evKm: 'Company EVs — km (charged off-site)',
+    districtHeat: 'District heating',
+    steam: 'Purchased steam',
+    districtCooling: 'District cooling',
+    otherEnergyTitle: 'Other purchased energy',
+    otherEnergyHint: 'District heating, steam, cooling, and company EVs charged away from your premises.',
+    previewLocation: 'Location-based',
+    previewMarket: 'Market-based',
+    market: {
+      title: 'Market-based method (optional)',
+      intro:
+        'The GHG Protocol asks for Scope 2 to be reported two ways. Location-based uses the grid average above. Market-based reflects what you buy: renewable certificates, your supplier’s factor, or a residual mix. Leave empty if you don’t have this information — market-based then equals location-based.',
+      renewableKwh: 'Electricity covered by renewable certificates / PPA',
+      renewableKwhHint:
+        'kWh matched by Guarantees of Origin, RECs, I-RECs or a PPA, with certificates retired for your company. Counted as 0 kg CO₂e.',
+      supplierFactor: 'Supplier emission factor',
+      supplierFactorHint:
+        'From your electricity supplier’s fuel-mix disclosure. Applied to kWh not covered by certificates.',
+      residualMixFactor: 'Residual mix factor',
+      residualMixFactorHint:
+        'Used when no supplier factor is given (e.g. AIB residual mix in Europe). If empty, the grid average is used.',
+      heatSupplierFactor: 'Heat / steam supplier factor',
+      heatSupplierFactorHint: 'Your heat network’s published factor. If empty, the default factor is used.',
+      notProvided: 'optional',
+    },
   },
   scope3: {
     title: 'Scope 3 — Value Chain',
-    subtitle: 'Optional: indirect emissions from business travel, commuting, waste, and water.',
+    subtitle:
+      'Optional: indirect emissions from purchases, freight, fuel and energy supply chains, waste, business travel and commuting.',
     optionalNote:
       'Scope 3 is optional for most SME reporting. Leave a line at 0 to exclude it — if everything is 0, results cover Scope 1 & 2 only.',
     source:
@@ -339,12 +394,24 @@ export const en = {
     subtotal: 'Subtotal',
     factorLine: '{factor} kg CO₂e per {unit}',
     categories: {
-      cat1Water: 'Purchased goods & services (water)',
+      cat1Purchased: 'Purchased goods & services',
+      cat3FuelEnergy: 'Fuel- and energy-related activities',
+      cat4Transport: 'Upstream transportation',
       cat5Waste: 'Waste generated in operations',
       cat6Travel: 'Business travel',
       cat7Commuting: 'Employee commuting',
     },
     fields: {
+      spendOfficeSupplies: 'Office supplies & paper',
+      spendItHardware: 'IT hardware & electronics',
+      spendServices: 'Professional, IT & software services',
+      spendFoodCatering: 'Food & catering',
+      spendConstruction: 'Building materials & construction work',
+      spendOtherGoods: 'Other purchased goods',
+      freightRoadTkm: 'Road freight (trucks)',
+      freightRailTkm: 'Rail freight',
+      freightSeaTkm: 'Sea freight (container ship)',
+      freightAirTkm: 'Air freight',
       flightShortHaulKm: 'Flights — short haul (< 3,700 km)',
       flightLongHaulKm: 'Flights — long haul',
       railKm: 'Rail travel',
@@ -362,9 +429,21 @@ export const en = {
       passengerKm: 'passenger-km',
       km: 'km',
       roomNights: 'room-night',
+      tonneKm: 'tonne-km',
+      currency: 'USD',
     },
+    currencyLabel: 'Currency for spend',
+    spendTitle: 'Spend-based (where you have no activity data)',
+    spendHint:
+      'Annual spend excluding VAT / sales tax. Spend-based factors are sector averages (US EPA, 2022 USD) — use activity data where you have it. Converted at 2024 average exchange rates.',
+    spendFactorLine: '{factor} kg CO₂e per USD',
+    freightHint:
+      'tonne-km = weight shipped (tonnes) × distance (km). Include freight you pay for that is run by other companies.',
+    cat3Toggle: 'Include automatic estimate',
+    cat3Hint:
+      'Upstream emissions of the fuels and energy already entered in Scope 1 & 2: extraction, refining and transport of fuels (well-to-tank), plus grid losses and upstream power generation. No extra data needed.',
     notCovered:
-      'Not yet covered: purchased goods (spend-based), capital goods, upstream transport, fuel- and energy-related activities, and downstream categories.',
+      'Not yet covered: capital goods, downstream transport, use and end-of-life of sold products, leased assets, franchises and investments.',
   },
   notifications: {
     section: 'Notifications',
@@ -531,6 +610,34 @@ export const en = {
     scope1Direct: 'SCOPE 1 — DIRECT',
     scope2Indirect: 'SCOPE 2 — INDIRECT',
     scope3ValueChain: 'SCOPE 3 — VALUE CHAIN',
+    scope2MarketLine: 'Market-based: {value}',
+    scope2DualTitle: 'Scope 2 — dual reporting',
+    scope2DualBody:
+      'Totals use location-based Scope 2 ({location} {unit}). Market-based Scope 2, reflecting your contracts and certificates: {market} {unit}.',
+    scope1ByGasTitle: 'Scope 1 by greenhouse gas',
+    gwpBasis: 'CO₂e using {basis}',
+    gases: {
+      co2: 'CO₂ — carbon dioxide',
+      ch4: 'CH₄ — methane',
+      n2o: 'N₂O — nitrous oxide',
+      hfc: 'HFCs — refrigerants',
+    },
+    pdfFuelDataset: 'Fuel & refrigerant factor dataset',
+    pdfHeatFactors: 'Heat, steam & cooling factors',
+    pdfMarketBasis: 'Scope 2 market-based basis',
+    marketCertificates: '{kwh} kWh covered by certificates (0 kg CO₂e)',
+    marketSupplier: 'supplier factor {factor} kg CO₂e/kWh',
+    marketResidual: 'residual mix {factor} kg CO₂e/kWh',
+    marketGrid: 'grid average for uncovered kWh (no supplier or residual mix factor)',
+    marketHeat: 'heat/steam supplier factor {factor} kg CO₂e/kWh',
+    pdfRefrigerants: 'Refrigerant GWPs applied',
+    pdfSpendConversion: 'Spend-based conversion',
+    spendConversion: '1 {currency} = {rate} USD (2024 average); factors in 2022 USD',
+    pdfCat3Basis: 'Category 3 estimate',
+    cat3Basis:
+      'Well-to-tank fuel factors; electricity grid losses and upstream generation at 30% of the grid factor; heat/steam 0.04 kg CO₂e/kWh.',
+    legacyFactorsNote:
+      'Calculated before fuel factor dataset 2026.2 — recalculate to add the gas split.',
     scope3Breakdown: 'Scope 3 by category',
     comparisonLabels: {
       total: 'Total',
@@ -653,6 +760,16 @@ export const en = {
     kwhPerMonth: 'kWh/month',
     m3PerMonth: 'm³/month',
     mwhPerMonth: 'MWh/month',
+    kgAbbr: 'kg',
+    kmAbbr: 'km',
+    kgPerYear: 'kg/year',
+    tonnesPerYear: 'tonnes/year',
+    kmPerYear: 'km/year',
+    milesPerYear: 'miles/year',
+    kgPerMonth: 'kg/month',
+    tonnesPerMonth: 'tonnes/month',
+    kmPerMonth: 'km/month',
+    milesPerMonth: 'miles/month',
   },
   enterprise: {
     targets: {

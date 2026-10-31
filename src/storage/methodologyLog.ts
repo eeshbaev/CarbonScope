@@ -5,6 +5,7 @@ import {
   EMISSION_FACTOR_REFERENCE_YEAR,
   getElectricityFactorForCountry,
 } from '../data/emissionFactors';
+import { FUEL_FACTOR_DATASET } from '../data/fuelFactors';
 import { hasCustomFactor } from './customFactors';
 import type { Assessment } from '../types';
 import type { MethodologyLogAction, MethodologyLogEntry } from '../types/enterprise';
@@ -25,9 +26,9 @@ export async function loadMethodologyLog(): Promise<MethodologyLogEntry[]> {
 
 function methodologySnapshotKey(entry: Pick<
   MethodologyLogEntry,
-  'factorVersion' | 'factorYear' | 'electricityFactor' | 'customFactor'
+  'factorVersion' | 'factorYear' | 'electricityFactor' | 'customFactor' | 'fuelFactorVersion'
 >): string {
-  return `${entry.factorVersion}|${entry.factorYear}|${entry.electricityFactor}|${entry.customFactor}`;
+  return `${entry.factorVersion}|${entry.factorYear}|${entry.electricityFactor}|${entry.customFactor}|${entry.fuelFactorVersion ?? ''}`;
 }
 
 /** Hide repeated saves that used the same factor snapshot (newest entry wins). */
@@ -63,6 +64,7 @@ export async function appendMethodologyLog(
     action,
     factorVersion: EMISSION_FACTOR_DATASET_VERSION,
     factorYear: EMISSION_FACTOR_REFERENCE_YEAR,
+    fuelFactorVersion: FUEL_FACTOR_DATASET.version,
     electricityFactor: getElectricityFactorForCountry(assessment.countryCode),
     customFactor: custom,
     appVersion: APP_VERSION,

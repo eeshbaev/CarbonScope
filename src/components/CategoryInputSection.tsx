@@ -23,9 +23,10 @@ import {
 } from '../utils/scopeFieldInputs';
 import type { ReportingMonth } from '../utils/reportingMonths';
 import type { TranslationKeys } from '../i18n/locales/en';
-import { litersToFuel, kwhToElectricity, kwhToGas } from '../units';
-
-type UnitKind = 'fuel' | 'gas' | 'electricity';
+import type { UnitKind } from '../units';
+import { standardUnitAbbr } from '../utils/unitLabels';
+import { formatAppNumber } from '../utils/appLocale';
+import type { Locale } from '../i18n';
 
 export interface CategoryEvidenceProps {
   category: EvidenceCategory;
@@ -47,17 +48,17 @@ interface CategoryInputSectionProps {
   monthlyEnabled: boolean;
   onCategoryChange: (next: CategoryInput) => void;
   evidence?: CategoryEvidenceProps;
+  /** Explicit info text (lines without industry-specific hint packs). */
+  infoText?: string;
 }
 
-function formatReadOnlyTotal(value: number, kind: UnitKind, t: TranslationKeys): string {
-  const rounded =
-    kind === 'fuel'
-      ? Math.round(litersToFuel(value, 'liters') * 100) / 100
-      : kind === 'gas'
-        ? Math.round(kwhToGas(value, 'kwh') * 100) / 100
-        : Math.round(kwhToElectricity(value, 'kwh') * 100) / 100;
-  const unit = kind === 'fuel' ? t.units.literAbbr : t.units.kwh;
-  return `${rounded} ${unit}`;
+function formatReadOnlyTotal(
+  value: number,
+  kind: UnitKind,
+  t: TranslationKeys,
+  locale: Locale
+): string {
+  return `${formatAppNumber(Math.round(value * 100) / 100, locale)} ${standardUnitAbbr(t, kind)}`;
 }
 
 export function CategoryInputSection({
@@ -72,6 +73,7 @@ export function CategoryInputSection({
   monthlyEnabled,
   onCategoryChange,
   evidence,
+  infoText,
 }: CategoryInputSectionProps) {
   const { t, locale } = useLanguage();
   const styles = useThemedStyles(createStyles);
@@ -79,7 +81,7 @@ export function CategoryInputSection({
   const [monthInfoKey, setMonthInfoKey] = useState<string | null>(null);
   const monthKeys = months.map((m) => m.key);
   const showMonthlyOption = monthlyEnabled && months.length > 0;
-  const infoMessage = getInputHint(locale, industry, infoField ?? 'diesel');
+  const infoMessage = infoText ?? getInputHint(locale, industry, infoField ?? 'diesel');
   const headerActions = (monthKey?: string) => (
     <View style={styles.headerActions}>
       {evidence ? (
@@ -176,7 +178,7 @@ export function CategoryInputSection({
 
         <View style={styles.totalFooter}>
           <Text style={styles.totalLabel}>{t.scopeInputs.periodTotal}</Text>
-          <Text style={styles.totalValue}>{formatReadOnlyTotal(periodTotal, kind, t)}</Text>
+          <Text style={styles.totalValue}>{formatReadOnlyTotal(periodTotal, kind, t, locale)}</Text>
           <Text style={styles.totalHint}>{t.scopeInputs.autoFromMonthly}</Text>
         </View>
 

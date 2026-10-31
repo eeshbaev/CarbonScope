@@ -12,6 +12,7 @@ import { ENTERPRISE_PACKS } from './packs/enterprisePacks';
 import { UI_PATCHES } from './packs/uiPatches';
 import { ACCESSIBILITY_PACKS } from './packs/accessibilityPacks';
 import { SCOPE3_PACKS } from './packs/scope3Packs';
+import { INVENTORY_PACKS } from './packs/inventoryPacks';
 
 export type Locale = 'en' | 'ru' | 'fr' | 'de' | 'it' | 'ja' | 'zh' | 'es' | 'pt';
 
@@ -57,7 +58,8 @@ function mergeLocale(locale: Locale): TranslationKeys {
     LEARN_LIBRARY_PACKS[locale],
     ENTERPRISE_PACKS[locale],
     ACCESSIBILITY_PACKS[locale],
-    SCOPE3_PACKS[locale]
+    SCOPE3_PACKS[locale],
+    INVENTORY_PACKS[locale]
   );
   const merged = buildLocale(partial);
   return applyLegalPack(

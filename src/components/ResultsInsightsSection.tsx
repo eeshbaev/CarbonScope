@@ -41,11 +41,20 @@ function formatPercent(t: TranslationKeys, percent: number): string {
 }
 
 function driverLabel(t: TranslationKeys, key: EmissionDriverKey): string {
+  if (key === 'cat3FuelEnergy') return t.scope3.categories.cat3FuelEnergy;
   const map: Record<string, string> = {
     diesel: t.results.driverDiesel,
     petrol: t.results.driverPetrol,
     naturalGas: t.results.driverNaturalGas,
     electricity: t.results.driverElectricity,
+    lpg: t.scope1.lpg,
+    heatingOil: t.scope1.heatingOil,
+    coal: t.scope1.coal,
+    refrigerants: t.scope1.refrigerantsShort,
+    evKm: t.scope2.evKm,
+    districtHeat: t.scope2.districtHeat,
+    steam: t.scope2.steam,
+    districtCooling: t.scope2.districtCooling,
     ...t.scope3.fields,
   };
   return formatCategoryLabel(map[key], key);

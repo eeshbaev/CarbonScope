@@ -3,7 +3,10 @@ import type { Locale } from '../i18n';
 import { formatAppNumber } from './appLocale';
 import type { ReportingPeriod } from '../types';
 
-export type ScopeInputKind = 'fuel' | 'gas' | 'electricity';
+import type { UnitKind } from '../units';
+import { standardUnitAbbr } from './unitLabels';
+
+export type ScopeInputKind = UnitKind;
 
 export function formatResolvedInputLine(
   value: number,
@@ -13,7 +16,7 @@ export function formatResolvedInputLine(
   t: TranslationKeys,
   locale: Locale
 ): string {
-  const unit = kind === 'fuel' ? t.units.literAbbr : t.units.kwh;
+  const unit = standardUnitAbbr(t, kind);
   const suffix = t.units.amountPeriodSuffix[period];
   const base = `${formatAppNumber(value, locale)} ${unit}${suffix}`;
   if (useMonthly) {
