@@ -41,11 +41,12 @@ function formatPercent(t: TranslationKeys, percent: number): string {
 }
 
 function driverLabel(t: TranslationKeys, key: EmissionDriverKey): string {
-  const map: Record<EmissionDriverKey, string> = {
+  const map: Record<string, string> = {
     diesel: t.results.driverDiesel,
     petrol: t.results.driverPetrol,
     naturalGas: t.results.driverNaturalGas,
     electricity: t.results.driverElectricity,
+    ...t.scope3.fields,
   };
   return formatCategoryLabel(map[key], key);
 }
@@ -93,7 +94,9 @@ function insightLabel(t: TranslationKeys, insight: ComparisonInsight): string {
   }
   const tpl =
     insight.labelKey === 'vsPriorYear' ? t.results.vsPriorYear : t.results.vsPriorPeriod;
-  return tpl.replace('{percent}', pct);
+  const scope =
+    insight.kind === 'electricity_month' ? '' : `${t.results.comparisonLabels[insight.kind]}: `;
+  return `${scope}${tpl.replace('{percent}', pct)}`;
 }
 
 export function ResultsInsightsSection({
@@ -151,6 +154,9 @@ export function ResultsInsightsSection({
             <Text style={styles.splitLine}>
               {t.scope1.title}: {formatEmissions(assessment.scope1Emissions)} · {t.scope2.title}:{' '}
               {formatEmissions(assessment.scope2Emissions)}
+              {(assessment.scope3Emissions ?? 0) > 0
+                ? ` · ${t.scope3.title}: ${formatEmissions(assessment.scope3Emissions)}`
+                : ''}
             </Text>
           </View>
         </Card>

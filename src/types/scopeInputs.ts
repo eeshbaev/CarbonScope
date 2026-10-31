@@ -1,3 +1,5 @@
+import { SCOPE3_FIELDS, type Scope3FieldKey } from '../data/scope3Factors';
+
 export type Scope1FieldKey = 'diesel' | 'petrol' | 'naturalGas';
 export type Scope2FieldKey = 'electricity';
 export type ScopeFieldKey = Scope1FieldKey | Scope2FieldKey;
@@ -90,4 +92,25 @@ export function migrateScope2Inputs(raw: LegacyScope2 | Scope2InputsV2): Scope2I
 
 export function supportsMonthlyEntry(period: '6_months' | '1_year'): boolean {
   return period === '6_months' || period === '1_year';
+}
+
+/** Scope 3 activity data: period totals per value-chain line (units per field definition). */
+export type Scope3Inputs = Record<Scope3FieldKey, number>;
+
+export const emptyScope3 = (): Scope3Inputs => {
+  const out = {} as Scope3Inputs;
+  for (const f of SCOPE3_FIELDS) out[f.key] = 0;
+  return out;
+};
+
+/** Older assessments have no Scope 3 data; coerce anything unexpected to zero. */
+export function migrateScope3Inputs(raw: unknown): Scope3Inputs {
+  const out = emptyScope3();
+  if (typeof raw !== 'object' || raw === null) return out;
+  const src = raw as Record<string, unknown>;
+  for (const f of SCOPE3_FIELDS) {
+    const v = src[f.key];
+    out[f.key] = typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
+  }
+  return out;
 }

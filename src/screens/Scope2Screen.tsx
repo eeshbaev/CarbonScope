@@ -1,5 +1,4 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { AssessmentNotesField } from '../components/AssessmentNotesField';
 import { Button } from '../components/Button';
@@ -23,15 +22,8 @@ import { DEFAULT_INDUSTRY } from '../data/industries';
 import type { RootStackParamList } from '../navigation/types';
 import type { ReportingPeriod } from '../types';
 import { supportsMonthlyEntry } from '../types/scopeInputs';
-import { onAssessmentSaved } from '../notifications/notificationService';
-import {
-  wasFirstSuccessNotificationSent,
-  wasPermissionPromptShown,
-} from '../notifications/notificationStorage';
-import { incrementCompaniesCreatedCount } from '../storage';
 import { getReportingMonthsForDraft, setScope2Field } from '../utils/scopeFieldInputs';
 import { getTco2eLabel } from '../utils/reportingPeriodCopy';
-import { shouldPromptRateForCompanyCount } from '../utils/ratePromptTriggers';
 import { useThemedStyles, type ThemeSlice } from '../hooks/useThemedStyles';
 import { colors } from '../theme';
 import { scaleFontSize } from '../theme/scale';
@@ -43,7 +35,6 @@ export function Scope2Screen({ navigation }: Props) {
   const { t, locale } = useLanguage();
   const styles = useThemedStyles(createStyles);
   useScreenTitle(t.scope2.title);
-  const [saving, setSaving] = useState(false);
   const { saving: savingProgress, savedVisible, saveProgress } = useSaveProgress();
   const {
     evidenceItems,
@@ -63,41 +54,12 @@ export function Scope2Screen({ navigation }: Props) {
   const months = getReportingMonthsForDraft(draft.reportingStartDate, period, locale);
   const monthlyEnabled = supportsMonthlyEntry(period) && !!draft.reportingStartDate;
 
-  const handleCalculate = async () => {
-    setSaving(true);
+  const handleContinue = async () => {
     try {
-      const isNewCompany = !draft.id;
-      const assessment = await saveCurrent({ finalize: true });
-      let firstFinalize = false;
-      try {
-        firstFinalize = !(await wasFirstSuccessNotificationSent());
-        await onAssessmentSaved(locale, assessment, { firstFinalize });
-      } catch {
-        // Notification sync is best-effort; assessment is already saved.
-      }
-
-      let promptRate = false;
-      if (isNewCompany) {
-        const createdCount = await incrementCompaniesCreatedCount();
-        promptRate = shouldPromptRateForCompanyCount(createdCount);
-      }
-
-      let promptNotifications = false;
-      try {
-        promptNotifications = firstFinalize && !(await wasPermissionPromptShown());
-      } catch {
-        // Ignore notification prompt errors.
-      }
-
-      navigation.navigate('Results', {
-        assessmentId: assessment.id,
-        promptRate,
-        promptNotifications,
-      });
+      await saveCurrent({ finalize: false });
+      navigation.navigate('Scope3');
     } catch {
       Alert.alert(t.common.error, t.scopeInputs.saveFailed);
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -109,7 +71,7 @@ export function Scope2Screen({ navigation }: Props) {
         onPress={saveProgress}
         loading={savingProgress}
       />
-      <Button title={t.scope2.calculate} onPress={handleCalculate} loading={saving} />
+      <Button title={t.scope2.continueScope3} onPress={handleContinue} />
     </>
   );
 

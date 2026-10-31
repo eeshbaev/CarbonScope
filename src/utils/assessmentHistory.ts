@@ -1,4 +1,5 @@
 import { EMISSION_FACTORS } from '../constants';
+import { SCOPE3_FIELDS, type Scope3FieldKey } from '../data/scope3Factors';
 import { normalizeCompanyKey } from './companyIdentity';
 import { listReportingMonths } from './reportingMonths';
 import type { Locale } from '../i18n';
@@ -41,7 +42,7 @@ export function percentChange(current: number, previous: number): number | null 
 }
 
 export type ComparisonInsight = {
-  kind: 'total' | 'scope1' | 'scope2' | 'electricity_month';
+  kind: 'total' | 'scope1' | 'scope2' | 'scope3' | 'electricity_month';
   percent: number;
   labelKey: 'vsPriorPeriod' | 'vsPriorYear' | 'electricityMonth';
   monthLabel?: string;
@@ -75,6 +76,11 @@ export function buildComparisonInsights(
   const s2Pct = percentChange(current.scope2Emissions, prior.scope2Emissions);
   if (s2Pct !== null && Math.abs(s2Pct) >= 1) {
     insights.push({ kind: 'scope2', percent: s2Pct, labelKey: 'vsPriorPeriod' });
+  }
+
+  const s3Pct = percentChange(current.scope3Emissions ?? 0, prior.scope3Emissions ?? 0);
+  if (s3Pct !== null && Math.abs(s3Pct) >= 1) {
+    insights.push({ kind: 'scope3', percent: s3Pct, labelKey: 'vsPriorPeriod' });
   }
 
   const monthInsight = compareLatestElectricityMonth(current, prior, locale);
@@ -122,6 +128,7 @@ export type TrendPoint = {
   total: number;
   scope1: number;
   scope2: number;
+  scope3: number;
   startISO: string;
 };
 
@@ -150,12 +157,13 @@ export function buildCompanyTrend(
         total: a.totalEmissions,
         scope1: a.scope1Emissions,
         scope2: a.scope2Emissions,
+        scope3: a.scope3Emissions ?? 0,
         startISO: a.reportingStartDate,
       };
     });
 }
 
-export type EmissionDriverKey = 'diesel' | 'petrol' | 'naturalGas' | 'electricity';
+export type EmissionDriverKey = 'diesel' | 'petrol' | 'naturalGas' | 'electricity' | Scope3FieldKey;
 
 export function getLargestEmissionDriver(assessment: Assessment): {
   key: EmissionDriverKey;
@@ -181,6 +189,10 @@ export function getLargestEmissionDriver(assessment: Assessment): {
       key: 'electricity',
       emissionsT: (resolveScope2Totals(assessment.scope2).electricityKwh * factor) / 1000,
     },
+    ...SCOPE3_FIELDS.map((f) => ({
+      key: f.key as EmissionDriverKey,
+      emissionsT: ((assessment.scope3?.[f.key] ?? 0) * f.factor) / 1000,
+    })),
   ];
 
   return drivers.reduce((best, d) => (d.emissionsT > best.emissionsT ? d : best), drivers[0]);

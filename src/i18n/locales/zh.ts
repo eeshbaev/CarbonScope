@@ -1,7 +1,7 @@
 import { buildLocale } from '../buildLocale';
 
 export const zh = buildLocale({
-  slogan: '快速 Scope 1 和 2 排放计算器',
+  slogan: '快速 Scope 1、2 和 3 排放计算器',
   common: {
     continue: '继续',
     cancel: '取消',
@@ -28,7 +28,7 @@ export const zh = buildLocale({
   },
   home: {
     ghgAligned: '符合 GHG Protocol',
-    scopeCalculator: 'Scope 1 和 2 CO₂ 计算器',
+    scopeCalculator: 'Scope 1、2 和 3 CO₂ 计算器',
     emptyTitle: '暂无评估',
     emptyText: '点击下方按钮创建第一个评估。',
     quickEditTitle: '快速更新',

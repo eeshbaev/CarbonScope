@@ -1,7 +1,7 @@
 import { buildLocale } from '../buildLocale';
 
 export const es = buildLocale({
-  slogan: 'Calculadora rápida de emisiones Scope 1 y 2',
+  slogan: 'Calculadora rápida de emisiones Scope 1, 2 y 3',
   common: {
     continue: 'Continuar',
     cancel: 'Cancelar',
@@ -29,7 +29,7 @@ export const es = buildLocale({
   },
   home: {
     ghgAligned: 'Alineado con GHG Protocol',
-    scopeCalculator: 'Calculadora Scope 1 y 2 CO₂',
+    scopeCalculator: 'Calculadora Scope 1, 2 y 3 CO₂',
     emptyTitle: 'Sin evaluaciones',
     emptyText: 'Pulse el botón inferior para crear su primera evaluación.',
     quickEditTitle: 'Actualización rápida',

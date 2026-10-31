@@ -16,13 +16,20 @@ import {
   EMISSION_FACTOR_SOURCES,
 } from '../data/emissionFactors';
 import { EMISSION_FACTORS } from '../constants';
+import { calculateScope3ByCategory } from '../calculations';
+import {
+  SCOPE3_CATEGORIES,
+  SCOPE3_CATEGORY_NUMBER,
+  SCOPE3_FACTOR_SOURCES,
+  SCOPE3_FIELDS,
+} from '../data/scope3Factors';
+import { formatAppDateTime, formatAppNumber } from './appLocale';
 import { formatCategoryLabel } from '../data/categoryEmblems';
 import { colors } from '../theme';
 import type { Assessment } from '../types';
 import type { MethodologyLogEntry } from '../types/enterprise';
 import { resolveScope1Totals, resolveScope2Totals } from './scopeFieldInputs';
 import { formatResolvedInputLine } from './scopeInputDisplay';
-import { formatAppDateTime } from './appLocale';
 
 const C = {
   primary: colors.primary,
@@ -110,6 +117,11 @@ export function buildReportPdfHtml(
   const total = assessment.totalEmissions;
   const s1 = assessment.scope1Emissions;
   const s2 = assessment.scope2Emissions;
+  const s3 = assessment.scope3Emissions ?? 0;
+  const hasScope3 = s3 > 0;
+  const scope3ByCategory = calculateScope3ByCategory(assessment.scope3);
+  const scope3Lines = SCOPE3_FIELDS.filter((f) => (assessment.scope3[f.key] ?? 0) > 0);
+  const scopeCellWidth = hasScope3 ? '33%' : '50%';
 
   const recHtml = recommendations
     .map(
@@ -163,9 +175,25 @@ export function buildReportPdfHtml(
       `Diesel ${EMISSION_FACTORS.diesel}, Petrol ${EMISSION_FACTORS.petrol}, Gas ${EMISSION_FACTORS.naturalGas} kg CO₂e per unit`
     )}
     ${row(t.results.pdfScope2Factor, `${assessment.electricityFactor} kg CO₂e/kWh (${countryName})`)}
+    ${
+      hasScope3
+        ? row(
+            t.results.pdfScope3Factors,
+            scope3Lines
+              .map(
+                (f) =>
+                  `${t.scope3.fields[f.key]}: ${t.scope3.factorLine
+                    .replace('{factor}', formatAppNumber(f.factor, locale))
+                    .replace('{unit}', t.scope3.units[f.unit])}`
+              )
+              .join('; ')
+          )
+        : ''
+    }
   </table>
   <p style="font-size:12px;color:${C.textSecondary};line-height:1.5;margin-top:12px;">${escapeHtml(t.results.pdfDisclaimer)}</p>
-  <p style="font-size:11px;color:${C.textSecondary};margin-top:8px;">${escapeHtml(EMISSION_FACTOR_SOURCES)}</p>`;
+  <p style="font-size:11px;color:${C.textSecondary};margin-top:8px;">${escapeHtml(EMISSION_FACTOR_SOURCES)}</p>
+  ${hasScope3 ? `<p style="font-size:11px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(SCOPE3_FACTOR_SOURCES)}</p>` : ''}`;
 
   return `<!DOCTYPE html>
 <html>
@@ -217,18 +245,45 @@ export function buildReportPdfHtml(
 
   <table cellpadding="0" cellspacing="12" width="100%" style="margin-bottom:20px;border-collapse:separate;">
     <tr>
-      <td width="50%" style="width:50%;border:1px solid ${C.border};border-radius:12px;padding:16px;text-align:center;">
+      <td width="${scopeCellWidth}" style="border:1px solid ${C.border};border-radius:12px;padding:16px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:${C.textSecondary};margin-bottom:8px;">${escapeHtml(t.results.scope1Direct)}</div>
         <div style="font-size:28px;font-weight:700;color:${C.primary};">${escapeHtml(formatEmissions(s1))}</div>
         <div style="font-size:12px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(tco2e)}</div>
       </td>
-      <td width="50%" style="border:1px solid ${C.border};border-radius:12px;padding:16px;text-align:center;">
+      <td width="${scopeCellWidth}" style="border:1px solid ${C.border};border-radius:12px;padding:16px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:${C.textSecondary};margin-bottom:8px;">${escapeHtml(t.results.scope2Indirect)}</div>
         <div style="font-size:28px;font-weight:700;color:${C.primary};">${escapeHtml(formatEmissions(s2))}</div>
         <div style="font-size:12px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(tco2e)}</div>
       </td>
+      ${
+        hasScope3
+          ? `<td width="${scopeCellWidth}" style="border:1px solid ${C.border};border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:${C.textSecondary};margin-bottom:8px;">${escapeHtml(t.results.scope3ValueChain)}</div>
+        <div style="font-size:28px;font-weight:700;color:${C.primary};">${escapeHtml(formatEmissions(s3))}</div>
+        <div style="font-size:12px;color:${C.textSecondary};margin-top:4px;">${escapeHtml(tco2e)}</div>
+      </td>`
+          : ''
+      }
     </tr>
   </table>
+
+  ${
+    hasScope3
+      ? `<h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.scope3Breakdown)}</h2>
+  <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+    ${SCOPE3_CATEGORIES.filter((c) => scope3ByCategory[c] > 0)
+      .map((c) =>
+        row(
+          t.scope3.categoryTitle
+            .replace('{number}', String(SCOPE3_CATEGORY_NUMBER[c]))
+            .replace('{name}', t.scope3.categories[c]),
+          `${formatEmissions(scope3ByCategory[c])} ${tco2e}`
+        )
+      )
+      .join('')}
+  </table>`
+      : ''
+  }
 
   <h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.recommendations)} — ${escapeHtml(industryName)}</h2>
   <table cellpadding="0" cellspacing="0" width="100%">${recHtml}</table>
@@ -239,60 +294,60 @@ export function buildReportPdfHtml(
     ${row(t.results.reportingPeriod, periodRange)}
     ${row(
       formatCategoryLabel(t.scope1.diesel, 'diesel'),
-      escapeHtml(
-        formatResolvedInputLine(
-          resolveScope1Totals(assessment.scope1).dieselLiters,
-          'fuel',
-          assessment.reportingPeriod,
-          assessment.scope1.diesel.useMonthly,
-          t,
-          locale
-        )
+      formatResolvedInputLine(
+        resolveScope1Totals(assessment.scope1).dieselLiters,
+        'fuel',
+        assessment.reportingPeriod,
+        assessment.scope1.diesel.useMonthly,
+        t,
+        locale
       )
     )}
     ${row(
       formatCategoryLabel(t.scope1.petrol, 'petrol'),
-      escapeHtml(
-        formatResolvedInputLine(
-          resolveScope1Totals(assessment.scope1).petrolLiters,
-          'fuel',
-          assessment.reportingPeriod,
-          assessment.scope1.petrol.useMonthly,
-          t,
-          locale
-        )
+      formatResolvedInputLine(
+        resolveScope1Totals(assessment.scope1).petrolLiters,
+        'fuel',
+        assessment.reportingPeriod,
+        assessment.scope1.petrol.useMonthly,
+        t,
+        locale
       )
     )}
     ${row(
       formatCategoryLabel(t.scope1.naturalGas, 'naturalGas'),
-      escapeHtml(
-        formatResolvedInputLine(
-          resolveScope1Totals(assessment.scope1).naturalGasKwh,
-          'gas',
-          assessment.reportingPeriod,
-          assessment.scope1.naturalGas.useMonthly,
-          t,
-          locale
-        )
+      formatResolvedInputLine(
+        resolveScope1Totals(assessment.scope1).naturalGasKwh,
+        'gas',
+        assessment.reportingPeriod,
+        assessment.scope1.naturalGas.useMonthly,
+        t,
+        locale
       )
     )}
     ${row(
       formatCategoryLabel(t.scope2.electricity, 'electricity'),
-      escapeHtml(
-        formatResolvedInputLine(
-          resolveScope2Totals(assessment.scope2).electricityKwh,
-          'electricity',
-          assessment.reportingPeriod,
-          assessment.scope2.electricity.useMonthly,
-          t,
-          locale
-        )
+      formatResolvedInputLine(
+        resolveScope2Totals(assessment.scope2).electricityKwh,
+        'electricity',
+        assessment.reportingPeriod,
+        assessment.scope2.electricity.useMonthly,
+        t,
+        locale
       )
     )}
+    ${scope3Lines
+      .map((f) =>
+        row(
+          formatCategoryLabel(t.scope3.fields[f.key], f.key),
+          `${formatAppNumber(assessment.scope3[f.key], locale)} ${t.scope3.units[f.unit]}`
+        )
+      )
+      .join('')}
     ${row(t.scope2.factorAuto, `${assessment.electricityFactor} ${t.common.kgCo2e}${t.units.perKwh}`)}
     ${
       assessment.notes?.trim()
-        ? row(t.scopeInputs.notesTitle, escapeHtml(assessment.notes.trim()))
+        ? row(t.scopeInputs.notesTitle, assessment.notes.trim())
         : ''
     }
   </table>

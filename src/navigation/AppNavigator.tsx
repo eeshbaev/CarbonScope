@@ -19,6 +19,7 @@ import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { ResultsScreen } from '../screens/ResultsScreen';
 import { Scope1Screen } from '../screens/Scope1Screen';
 import { Scope2Screen } from '../screens/Scope2Screen';
+import { Scope3Screen } from '../screens/Scope3Screen';
 import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import {
@@ -114,6 +115,7 @@ function NavigatorContent() {
         />
         <Stack.Screen name="Scope1" component={Scope1Screen} options={{ title: t.scope1.title }} />
         <Stack.Screen name="Scope2" component={Scope2Screen} options={{ title: t.scope2.title }} />
+        <Stack.Screen name="Scope3" component={Scope3Screen} options={{ title: t.scope3.title }} />
         <Stack.Screen
           name="Results"
           component={ResultsScreen}

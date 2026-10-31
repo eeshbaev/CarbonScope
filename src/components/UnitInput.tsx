@@ -15,6 +15,7 @@ import {
   kwhToGas,
   litersToFuel,
 } from '../units';
+import { parseNumberInput } from '../utils/parseNumberInput';
 import { InfoCircleButton } from './InfoCircleButton';
 import { InfoHintModal } from './InfoHintModal';
 
@@ -38,10 +39,7 @@ interface UnitInputProps {
   showHint?: boolean;
 }
 
-function parseNum(value: string): number {
-  const n = parseFloat(value.replace(/,/g, ''));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
+const parseNum = parseNumberInput;
 
 const KIND_TO_HINT_FIELD: Record<UnitKind, InputHintField> = {
   fuel: 'diesel',

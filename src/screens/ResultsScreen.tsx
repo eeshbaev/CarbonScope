@@ -22,7 +22,7 @@ import { SavedToast } from '../components/SavedToast';
 import { Button } from '../components/Button';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ScreenLayout } from '../components/ScreenLayout';
-import { buildAssessment } from '../calculations';
+import { buildAssessment, formatEmissions } from '../calculations';
 import type { IndustryKey } from '../data/industries';
 import { useAssessment } from '../context/AssessmentContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -225,20 +225,31 @@ export function ResultsScreen({ navigation, route }: Props) {
     if (!assessment) return null;
     const s1 = assessment.scope1Emissions;
     const s2 = assessment.scope2Emissions;
+    const s3 = assessment.scope3Emissions ?? 0;
     return {
       data: [
         {
           name: 'Scope 1',
-          population: Math.max(s1, 0.001),
+          population: Math.max(Number(formatEmissions(s1)), 0.001),
           color: colors.chartOrange,
           legendFontColor: colors.text,
         },
         {
           name: 'Scope 2',
-          population: Math.max(s2, 0.001),
+          population: Math.max(Number(formatEmissions(s2)), 0.001),
           color: colors.chartYellow,
           legendFontColor: colors.text,
         },
+        ...(s3 > 0
+          ? [
+              {
+                name: 'Scope 3',
+                population: Number(formatEmissions(s3)),
+                color: colors.chartBlue,
+                legendFontColor: colors.text,
+              },
+            ]
+          : []),
       ],
     };
   }, [assessment]);

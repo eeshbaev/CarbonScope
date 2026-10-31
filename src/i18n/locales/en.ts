@@ -2,7 +2,7 @@ const recommendation = (a: string, b: string, c: string) => [a, b, c] as [string
 
 export const en = {
   appName: 'CarbonScope',
-  slogan: 'Fast Scope 1 & 2 Emissions Calculator',
+  slogan: 'Fast Scope 1, 2 & 3 Emissions Calculator',
   tagline: 'GHG Protocol · Scope 1 & 2',
   common: {
     continue: 'Continue',
@@ -210,7 +210,7 @@ export const en = {
   },
   home: {
     ghgAligned: 'GHG Protocol Aligned',
-    scopeCalculator: 'Scope 1 & 2 CO₂ Calculator',
+    scopeCalculator: 'Scope 1, 2 & 3 CO₂ Calculator',
     emptyTitle: 'No assessments yet',
     emptyText: 'Tap the button below to create your first company assessment.',
     totalGhg: 'Total GHG',
@@ -324,6 +324,47 @@ export const en = {
     factorAuto: 'Coefficient (auto by country)',
     preview: 'Scope 2 preview',
     calculate: 'Calculate Results',
+    continueScope3: 'Continue to Scope 3',
+  },
+  scope3: {
+    title: 'Scope 3 — Value Chain',
+    subtitle: 'Optional: indirect emissions from business travel, commuting, waste, and water.',
+    optionalNote:
+      'Scope 3 is optional for most SME reporting. Leave a line at 0 to exclude it — if everything is 0, results cover Scope 1 & 2 only.',
+    source:
+      'Source: travel booking reports, expense claims, staff commuting surveys, waste contractor reports, and water bills.',
+    preview: 'Scope 3 preview',
+    calculate: 'Calculate Results',
+    categoryTitle: 'Category {number} — {name}',
+    subtotal: 'Subtotal',
+    factorLine: '{factor} kg CO₂e per {unit}',
+    categories: {
+      cat1Water: 'Purchased goods & services (water)',
+      cat5Waste: 'Waste generated in operations',
+      cat6Travel: 'Business travel',
+      cat7Commuting: 'Employee commuting',
+    },
+    fields: {
+      flightShortHaulKm: 'Flights — short haul (< 3,700 km)',
+      flightLongHaulKm: 'Flights — long haul',
+      railKm: 'Rail travel',
+      carKm: 'Car travel (rental, taxi, private car claims)',
+      hotelNights: 'Hotel stays',
+      commuteCarKm: 'Commuting by car',
+      commutePublicTransportKm: 'Commuting by bus / metro / train',
+      wasteLandfillTonnes: 'Waste to landfill',
+      wasteRecycledTonnes: 'Waste recycled',
+      waterM3: 'Water supply & wastewater',
+    },
+    units: {
+      m3: 'm³',
+      tonnes: 'tonne',
+      passengerKm: 'passenger-km',
+      km: 'km',
+      roomNights: 'room-night',
+    },
+    notCovered:
+      'Not yet covered: purchased goods (spend-based), capital goods, upstream transport, fuel- and energy-related activities, and downstream categories.',
   },
   notifications: {
     section: 'Notifications',
@@ -489,6 +530,14 @@ export const en = {
     },
     scope1Direct: 'SCOPE 1 — DIRECT',
     scope2Indirect: 'SCOPE 2 — INDIRECT',
+    scope3ValueChain: 'SCOPE 3 — VALUE CHAIN',
+    scope3Breakdown: 'Scope 3 by category',
+    comparisonLabels: {
+      total: 'Total',
+      scope1: 'Scope 1',
+      scope2: 'Scope 2',
+      scope3: 'Scope 3',
+    },
     breakdown: 'Scope Breakdown',
     recommendations: 'Recommendations',
     inputSummary: 'Input Summary',
@@ -509,6 +558,7 @@ export const en = {
     pdfFactorYear: 'Reference year (grid averages)',
     pdfScope1Factors: 'Scope 1 combustion factors',
     pdfScope2Factor: 'Scope 2 grid factor applied',
+    pdfScope3Factors: 'Scope 3 activity factors',
     pdfDisclaimer:
       'Indicative estimates for internal use. Factors are public averages; verify against your national guidance and contractual instruments before regulated disclosure.',
     duplicatePeriod: 'New period (copy structure)',

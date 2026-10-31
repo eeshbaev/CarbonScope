@@ -9,10 +9,13 @@ import type {
 import {
   emptyScope1V2,
   emptyScope2V2,
+  emptyScope3,
   migrateScope1Inputs,
   migrateScope2Inputs,
+  migrateScope3Inputs,
   type Scope1InputsV2,
   type Scope2InputsV2,
+  type Scope3Inputs,
 } from './types/scopeInputs';
 import { buildEvidenceSlotKey } from './utils/evidenceHelpers';
 
@@ -20,6 +23,7 @@ export type ReportingPeriod = '6_months' | '1_year';
 
 export type Scope1Inputs = Scope1InputsV2;
 export type Scope2Inputs = Scope2InputsV2;
+export type { Scope3Inputs };
 
 export interface Assessment {
   id: string;
@@ -32,8 +36,12 @@ export interface Assessment {
   reportingStartDate: string;
   scope1: Scope1Inputs;
   scope2: Scope2Inputs;
+  /** Optional value-chain activity data (all zero when Scope 3 is not reported). */
+  scope3: Scope3Inputs;
   scope1Emissions: number;
   scope2Emissions: number;
+  scope3Emissions: number;
+  /** Scope 1 + 2 + 3. */
   totalEmissions: number;
   electricityFactor: number;
   updatedAt: string;
@@ -71,6 +79,7 @@ export interface AssessmentDraft {
   reportingStartDate: string;
   scope1: Scope1Inputs;
   scope2: Scope2Inputs;
+  scope3: Scope3Inputs;
   notes: string;
   clientTag?: string;
 }
@@ -106,6 +115,7 @@ export const emptyDraft = (): AssessmentDraft => ({
   reportingStartDate: '',
   scope1: emptyScope1(),
   scope2: emptyScope2(),
+  scope3: emptyScope3(),
   notes: '',
   clientTag: '',
 });
@@ -126,6 +136,11 @@ export function normalizeAssessment(raw: Assessment): Assessment {
     reportingStartDate: raw.reportingStartDate ?? '',
     scope1: normalizeScope1Inputs(raw.scope1),
     scope2: normalizeScope2Inputs(raw.scope2),
+    scope3: migrateScope3Inputs(raw.scope3),
+    scope3Emissions:
+      typeof raw.scope3Emissions === 'number' && Number.isFinite(raw.scope3Emissions)
+        ? raw.scope3Emissions
+        : 0,
     notes: typeof raw.notes === 'string' ? raw.notes : '',
     selectedInitiatives: Array.isArray(raw.selectedInitiatives)
       ? (raw.selectedInitiatives as InitiativeKey[])

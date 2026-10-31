@@ -9,8 +9,10 @@ export const colors = {
   card: '#FFFFFF',
   scope1: '#E07A3A',
   scope2: '#D4A017',
+  scope3: '#3A7CA5',
   chartOrange: '#E07A3A',
   chartYellow: '#D4A017',
+  chartBlue: '#3A7CA5',
   danger: '#B42318',
   white: '#FFFFFF',
 };

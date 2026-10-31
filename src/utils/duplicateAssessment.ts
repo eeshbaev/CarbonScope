@@ -1,13 +1,13 @@
 import { assessmentToDraft } from '../calculations';
 import { monthsForPeriod, parseISODate, toISODateString } from './reportingDates';
-import { emptyCategoryInput } from '../types/scopeInputs';
+import { emptyCategoryInput, emptyScope3 } from '../types/scopeInputs';
 import type { Assessment, AssessmentDraft } from '../types';
 
 function clearedCategory() {
   return emptyCategoryInput();
 }
 
-/** Copy company profile and structure; clear all fuel/electricity amounts for the next reporting period. */
+/** Copy company profile and structure; clear all fuel/electricity/value-chain amounts for the next reporting period. */
 export function duplicateForNextPeriod(source: Assessment): AssessmentDraft {
   const draft = assessmentToDraft(source);
   const period = source.reportingPeriod;
@@ -36,6 +36,7 @@ export function duplicateForNextPeriod(source: Assessment): AssessmentDraft {
     scope2: {
       electricity: clearedCategory(),
     },
+    scope3: emptyScope3(),
     notes: '',
   };
 }

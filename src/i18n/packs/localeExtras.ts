@@ -25,7 +25,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'Соответствие GHG Protocol',
-      scopeCalculator: 'Калькулятор Scope 1 и 2 CO₂',
+      scopeCalculator: 'Калькулятор Scope 1, 2 и 3 CO₂',
       emptyTitle: 'Пока нет оценок',
       emptyText: 'Нажмите кнопку ниже, чтобы создать первую оценку.',
       totalGhg: 'Всего ПГ',
@@ -97,7 +97,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'Aligné GHG Protocol',
-      scopeCalculator: 'Calculateur Scope 1 et 2 CO₂',
+      scopeCalculator: 'Calculateur Scope 1, 2 et 3 CO₂',
       emptyTitle: 'Aucune évaluation',
       emptyText: 'Appuyez sur le bouton ci-dessous pour créer une évaluation.',
       insightTitle: 'Insight de la semaine',
@@ -160,7 +160,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'GHG Protocol konform',
-      scopeCalculator: 'Scope-1- und Scope-2-CO₂-Rechner',
+      scopeCalculator: 'Scope-1-, -2- und -3-CO₂-Rechner',
       emptyTitle: 'Noch keine Bewertungen',
       emptyText: 'Tippen Sie unten, um die erste Bewertung zu erstellen.',
       insightTitle: 'Insight der Woche',
@@ -223,7 +223,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'Alineado con GHG Protocol',
-      scopeCalculator: 'Calculadora Scope 1 y 2 CO₂',
+      scopeCalculator: 'Calculadora Scope 1, 2 y 3 CO₂',
       emptyTitle: 'Sin evaluaciones',
       emptyText: 'Pulse el botón inferior para crear su primera evaluación.',
       insightTitle: 'Insight de la semana',
@@ -286,7 +286,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'Alinhado com GHG Protocol',
-      scopeCalculator: 'Calculadora Scope 1 e 2 CO₂',
+      scopeCalculator: 'Calculadora Scope 1, 2 e 3 CO₂',
       emptyTitle: 'Sem avaliações',
       emptyText: 'Toque no botão abaixo para criar a primeira avaliação.',
       insightTitle: 'Insight da semana',
@@ -349,7 +349,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'Allineato al GHG Protocol',
-      scopeCalculator: 'Calcolatore Scope 1 e 2 CO₂',
+      scopeCalculator: 'Calcolatore Scope 1, 2 e 3 CO₂',
       emptyTitle: 'Nessuna valutazione',
       emptyText: 'Tocca il pulsante in basso per creare la prima valutazione.',
       insightTitle: 'Insight della settimana',
@@ -412,7 +412,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: 'GHG Protocol準拠',
-      scopeCalculator: 'Scope 1・2 CO₂計算機',
+      scopeCalculator: 'Scope 1・2・3 CO₂計算機',
       emptyTitle: '評価がありません',
       emptyText: '下のボタンで最初の評価を作成してください。',
       insightTitle: '今週のインサイト',
@@ -474,7 +474,7 @@ export const LOCALE_EXTRAS: Record<string, DeepPartial<TranslationKeys>> = {
     },
     home: {
       ghgAligned: '符合 GHG Protocol',
-      scopeCalculator: 'Scope 1 和 2 CO₂ 计算器',
+      scopeCalculator: 'Scope 1、2 和 3 CO₂ 计算器',
       emptyTitle: '暂无评估',
       emptyText: '点击下方按钮创建第一个评估。',
       insightTitle: '本周洞察',

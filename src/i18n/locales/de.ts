@@ -1,7 +1,7 @@
 import { buildLocale } from '../buildLocale';
 
 export const de = buildLocale({
-  slogan: 'Schneller Scope-1- und Scope-2-Rechner',
+  slogan: 'Schneller Scope-1-, -2- und -3-Rechner',
   common: {
     continue: 'Weiter',
     cancel: 'Abbrechen',
@@ -29,7 +29,7 @@ export const de = buildLocale({
   },
   home: {
     ghgAligned: 'GHG Protocol konform',
-    scopeCalculator: 'Scope-1- und Scope-2-CO₂-Rechner',
+    scopeCalculator: 'Scope-1-, -2- und -3-CO₂-Rechner',
     emptyTitle: 'Noch keine Bewertungen',
     emptyText: 'Tippen Sie unten, um die erste Bewertung zu erstellen.',
     quickEditTitle: 'Schnell aktualisieren',

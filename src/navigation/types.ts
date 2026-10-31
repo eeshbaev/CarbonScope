@@ -11,6 +11,7 @@ export type RootStackParamList = {
   CompanyInfo: undefined;
   Scope1: undefined;
   Scope2: undefined;
+  Scope3: undefined;
   Results: {
     assessmentId?: string;
     promptRate?: boolean;

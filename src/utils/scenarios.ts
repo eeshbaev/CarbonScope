@@ -50,7 +50,7 @@ function applyFleetEv(scope1: Assessment['scope1'], fleetEvPct: number) {
 export function computeScenarioTotals(
   assessment: Assessment,
   adj: ScenarioAdjustments
-): { scope1: number; scope2: number; total: number } {
+): { scope1: number; scope2: number; scope3: number; total: number } {
   let scope1Inputs = {
     diesel: scaleCategory(assessment.scope1.diesel, adj.dieselPct),
     petrol: scaleCategory(assessment.scope1.petrol, adj.petrolPct),
@@ -73,13 +73,16 @@ export function computeScenarioTotals(
     scope2 = calculateScope2Emissions(scope2Inputs, assessment.countryCode);
   }
 
-  return { scope1, scope2, total: scope1 + scope2 };
+  // Scenario levers act on Scope 1 & 2; Scope 3 is carried through unchanged.
+  const scope3 = assessment.scope3Emissions ?? 0;
+  return { scope1, scope2, scope3, total: scope1 + scope2 + scope3 };
 }
 
 export function getBaselineTotals(assessment: Assessment) {
   return {
     scope1: assessment.scope1Emissions,
     scope2: assessment.scope2Emissions,
+    scope3: assessment.scope3Emissions ?? 0,
     total: assessment.totalEmissions,
   };
 }

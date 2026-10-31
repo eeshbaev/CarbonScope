@@ -5,7 +5,9 @@ import { Card } from './Card';
 import { CategoryLabel } from './CategoryLabel';
 import type { EmissionCategoryKey } from '../data/categoryEmblems';
 import { MethodologyLogSection } from './MethodologyLogSection';
-import { formatEmissions } from '../calculations';
+import { calculateScope3ByCategory, formatEmissions } from '../calculations';
+import { SCOPE3_CATEGORIES, SCOPE3_CATEGORY_NUMBER, SCOPE3_FIELDS } from '../data/scope3Factors';
+import { formatAppNumber } from '../utils/appLocale';
 import { countryCodeToFlag } from '../data/countries';
 import type { IndustryKey } from '../data/industries';
 import type { TranslationKeys } from '../i18n/locales/en';
@@ -85,6 +87,9 @@ export function EmissionReportContent({
   chartData,
 }: Props) {
   const styles = useThemedStyles(createStyles);
+  const hasScope3 = (assessment.scope3Emissions ?? 0) > 0;
+  const scope3ByCategory = calculateScope3ByCategory(assessment.scope3);
+  const scope3Lines = SCOPE3_FIELDS.filter((f) => (assessment.scope3[f.key] ?? 0) > 0);
 
   return (
     <>
@@ -103,15 +108,39 @@ export function EmissionReportContent({
       <View style={styles.scopeRow}>
         <Card style={styles.scopeCard}>
           <Text style={styles.scopeLabel}>{t.results.scope1Direct}</Text>
-          <Text style={styles.scopeValue}>{formatEmissions(assessment.scope1Emissions)}</Text>
+          <Text style={[styles.scopeValue, hasScope3 && styles.scopeValueCompact]} adjustsFontSizeToFit numberOfLines={1}>{formatEmissions(assessment.scope1Emissions)}</Text>
           <Text style={styles.scopeUnit}>{tco2eLabel}</Text>
         </Card>
         <Card style={styles.scopeCard}>
           <Text style={styles.scopeLabel}>{t.results.scope2Indirect}</Text>
-          <Text style={styles.scopeValue}>{formatEmissions(assessment.scope2Emissions)}</Text>
+          <Text style={[styles.scopeValue, hasScope3 && styles.scopeValueCompact]} adjustsFontSizeToFit numberOfLines={1}>{formatEmissions(assessment.scope2Emissions)}</Text>
           <Text style={styles.scopeUnit}>{tco2eLabel}</Text>
         </Card>
+        {hasScope3 ? (
+          <Card style={styles.scopeCard}>
+            <Text style={styles.scopeLabel}>{t.results.scope3ValueChain}</Text>
+            <Text style={[styles.scopeValue, hasScope3 && styles.scopeValueCompact]} adjustsFontSizeToFit numberOfLines={1}>{formatEmissions(assessment.scope3Emissions)}</Text>
+            <Text style={styles.scopeUnit}>{tco2eLabel}</Text>
+          </Card>
+        ) : null}
       </View>
+
+      {hasScope3 ? (
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.results.scope3Breakdown}</Text>
+          {SCOPE3_CATEGORIES.filter((c) => scope3ByCategory[c] > 0).map((c, i, arr) => (
+            <SummaryRow
+              key={c}
+              label={t.scope3.categoryTitle
+                .replace('{number}', String(SCOPE3_CATEGORY_NUMBER[c]))
+                .replace('{name}', t.scope3.categories[c])}
+              value={`${formatEmissions(scope3ByCategory[c])} ${tco2eLabel}`}
+              last={i === arr.length - 1}
+              styles={styles}
+            />
+          ))}
+        </Card>
+      ) : null}
 
       {showBreakdown && chartData ? (
         <Card style={styles.chartCard}>
@@ -204,6 +233,15 @@ export function EmissionReportContent({
           )}
           styles={styles}
         />
+        {scope3Lines.map((f) => (
+          <SummaryRow
+            key={f.key}
+            category={f.key}
+            label={t.scope3.fields[f.key]}
+            value={`${formatAppNumber(assessment.scope3[f.key], locale)} ${t.scope3.units[f.unit]}`}
+            styles={styles}
+          />
+        ))}
         <SummaryRow
           label={t.scope2.factorAuto}
           value={`${assessment.electricityFactor} ${t.common.kgCo2e}${t.units.perKwh}`}
@@ -270,7 +308,7 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
   },
   scopeRow: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   scopeCard: {
@@ -291,6 +329,9 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
     fontSize: scaleFontSize(26, fontScale),
     fontWeight: '700',
     color: colors.primary,
+  },
+  scopeValueCompact: {
+    fontSize: scaleFontSize(21, fontScale),
   },
   scopeUnit: {
     ...typography.caption,

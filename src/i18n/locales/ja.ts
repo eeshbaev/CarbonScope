@@ -1,7 +1,7 @@
 import { buildLocale } from '../buildLocale';
 
 export const ja = buildLocale({
-  slogan: 'Scope 1・2 排出量の迅速計算',
+  slogan: 'Scope 1・2・3 排出量の迅速計算',
   common: {
     continue: '続ける',
     cancel: 'キャンセル',
@@ -29,7 +29,7 @@ export const ja = buildLocale({
   },
   home: {
     ghgAligned: 'GHG Protocol準拠',
-    scopeCalculator: 'Scope 1・2 CO₂計算機',
+    scopeCalculator: 'Scope 1・2・3 CO₂計算機',
     emptyTitle: '評価がありません',
     emptyText: '下のボタンで最初の評価を作成してください。',
     quickEditTitle: 'クイック更新',

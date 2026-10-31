@@ -77,6 +77,7 @@ export function CompanyTrendsScreen({ route }: Props) {
               </Text>
               <Text style={styles.split}>
                 S1 {formatEmissions(p.scope1)} · S2 {formatEmissions(p.scope2)}
+                {p.scope3 > 0 ? ` · S3 ${formatEmissions(p.scope3)}` : ''}
               </Text>
             </View>
           ))}
