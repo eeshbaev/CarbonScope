@@ -179,6 +179,18 @@ export function EmissionReportContent({
         </Card>
       ) : null}
 
+      {(assessment.biogenicCo2 ?? breakdown.biogenicCo2) > 0 ? (
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.results.biogenicTitle}</Text>
+          <Text style={styles.bodyText}>
+            {t.results.biogenicBody.replace(
+              '{value}',
+              formatEmissions(assessment.biogenicCo2 ?? breakdown.biogenicCo2)
+            )}
+          </Text>
+        </Card>
+      ) : null}
+
       {marketDiffers ? (
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>{t.results.scope2DualTitle}</Text>

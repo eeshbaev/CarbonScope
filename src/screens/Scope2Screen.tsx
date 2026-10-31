@@ -13,6 +13,7 @@ import { NumberField } from '../components/NumberField';
 import { CATEGORY_LINES, getLineInput, setLineInput } from '../data/inputLines';
 import type { EvidenceCategory } from '../types/enterprise';
 import type { MarketBasedInputs } from '../types/scopeInputs';
+import { qualityOf } from '../utils/reportMetrics';
 import { lineFactorHint, lineInfoText, lineLabel } from '../utils/lineLabels';
 import { getElectricityFactorForCountry } from '../data/emissionFactors';
 import { countryCodeToFlag } from '../data/countries';
@@ -143,6 +144,10 @@ export function Scope2Screen({ navigation }: Props) {
             months={months}
             monthlyEnabled={monthlyEnabled}
             onCategoryChange={(next) => updateDraft(setLineInput(draft, l.key, next))}
+            quality={qualityOf(draft, l.key)}
+            onQualityChange={(q) =>
+              updateDraft({ dataQuality: { ...(draft.dataQuality ?? {}), [l.key]: q } })
+            }
             evidence={evidenceFor(l.evidence)}
           />
         </View>

@@ -310,6 +310,14 @@ export function buildReportPdfHtml(
       : ''
   }
   ${
+    (assessment.biogenicCo2 ?? breakdown.biogenicCo2) > 0
+      ? `<h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.biogenicTitle)}</h2>
+  <p style="font-size:13px;color:${C.textSecondary};line-height:1.5;">${escapeHtml(
+    t.results.biogenicBody.replace('{value}', formatEmissions(assessment.biogenicCo2 ?? breakdown.biogenicCo2))
+  )}</p>`
+      : ''
+  }
+  ${
     marketDiffers
       ? `<h2 style="font-size:16px;color:${C.primary};border-bottom:2px solid ${C.primaryMuted};padding-bottom:6px;margin:24px 0 12px;">${escapeHtml(t.results.scope2DualTitle)}</h2>
   <p style="font-size:13px;color:${C.textSecondary};line-height:1.5;">${escapeHtml(

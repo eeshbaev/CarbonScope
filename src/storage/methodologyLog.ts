@@ -79,6 +79,11 @@ export async function appendMethodologyLog(
   await AsyncStorage.setItem(LOG_KEY, JSON.stringify(list.slice(0, MAX_ENTRIES)));
 }
 
+/** Replace the whole log (backup restore). */
+export async function saveMethodologyLog(entries: MethodologyLogEntry[]): Promise<void> {
+  await AsyncStorage.setItem(LOG_KEY, JSON.stringify(entries.slice(0, MAX_ENTRIES)));
+}
+
 export async function clearMethodologyLog(): Promise<void> {
   await AsyncStorage.removeItem(LOG_KEY);
 }

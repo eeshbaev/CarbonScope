@@ -107,12 +107,10 @@ function migrateCategory(raw: unknown): CategoryInput {
 }
 
 export function isScope1V2(raw: unknown): boolean {
-  return (
-    typeof raw === 'object' &&
-    raw !== null &&
-    'diesel' in raw &&
-    typeof (raw as { diesel: unknown }).diesel === 'object'
-  );
+  if (typeof raw !== 'object' || raw === null) return false;
+  const src = raw as Record<string, unknown>;
+  // Current shape: any fuel stored as a CategoryInput object (legacy shape used flat numbers).
+  return SCOPE1_FUELS.some((k) => typeof src[k] === 'object' && src[k] !== null) || 'refrigerants' in src;
 }
 
 export function migrateScope1Inputs(raw: unknown): Scope1InputsV2 {

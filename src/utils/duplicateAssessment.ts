@@ -30,5 +30,9 @@ export function duplicateForNextPeriod(source: Assessment): AssessmentDraft {
       includeFuelEnergyUpstream: draft.scope3.includeFuelEnergyUpstream,
     },
     notes: '',
+    // Company profile, boundary and data-quality choices usually carry over to the next period.
+    profile: draft.profile,
+    boundary: draft.boundary,
+    dataQuality: draft.dataQuality,
   };
 }

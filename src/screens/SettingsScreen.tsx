@@ -22,6 +22,9 @@ import { clearAllAppData } from '../storage';
 import { requestInAppReview } from '../utils/appReview';
 import { markRatedByUser } from '../rating/ratingService';
 import { STORE_CONFIG } from '../constants/store';
+import { BackupError } from '../utils/backup';
+import { exportBackup, exportCsv, importBackup } from '../utils/backupIO';
+import { markBackupMade } from '../storage/backupNudge';
 import * as Linking from 'expo-linking';
 import { colors, radii } from '../theme';
 
@@ -39,7 +42,7 @@ const DISPLAY_SIZE_OPTIONS: DisplaySizePreference[] = [
 
 export function SettingsScreen({ navigation }: Props) {
   const { locale, setLocale, t } = useLanguage();
-  const { prefs, setFontSize, setDisplaySize } = useAccessibility();
+  const { prefs, setFontSize, setDisplaySize, setReduceMotion } = useAccessibility();
   const styles = useThemedStyles(createStyles);
   const { startNew } = useAssessment();
   const [clearConfirmVisible, setClearConfirmVisible] = useState(false);
@@ -91,6 +94,30 @@ export function SettingsScreen({ navigation }: Props) {
     await Linking.openURL(`mailto:${STORE_CONFIG.supportEmail}?subject=${subject}&body=${body}`).catch(
       () => undefined
     );
+  };
+
+  const runData = async (action: 'backup' | 'import' | 'csv') => {
+    try {
+      if (action === 'backup') {
+        await exportBackup();
+        await markBackupMade();
+      } else if (action === 'csv') {
+        await exportCsv();
+      } else {
+        const result = await importBackup();
+        if (!result) return;
+        Alert.alert(
+          t.settings.importDone
+            .replace('{added}', String(result.added))
+            .replace('{updated}', String(result.updated))
+        );
+      }
+    } catch (err) {
+      Alert.alert(
+        t.common.error,
+        err instanceof BackupError ? t.settings.importInvalid : t.settings.dataFailed
+      );
+    }
   };
 
   const handleClearAll = async () => {
@@ -150,6 +177,12 @@ export function SettingsScreen({ navigation }: Props) {
             value,
             label: displaySizeLabel(value),
           }))}
+        />
+        <SettingsSwitchRow
+          label={t.settings.reduceMotion}
+          value={prefs.reduceMotion}
+          onValueChange={(v) => void setReduceMotion(v)}
+          styles={styles}
         />
         <View style={styles.previewCard}>
           <Text style={styles.previewTitle}>{t.settings.accessibilityPreview}</Text>
@@ -253,7 +286,11 @@ export function SettingsScreen({ navigation }: Props) {
       </View>
 
       <Text style={[styles.section, styles.sectionSpaced]}>{t.settings.dataSection}</Text>
+      <Text style={styles.hint}>{t.settings.dataHint}</Text>
       <View style={styles.list}>
+        <SettingsRow label={t.settings.exportBackup} onPress={() => void runData('backup')} styles={styles} />
+        <SettingsRow label={t.settings.importBackup} onPress={() => void runData('import')} styles={styles} />
+        <SettingsRow label={t.settings.exportCsv} onPress={() => void runData('csv')} styles={styles} />
         <Pressable
           onPress={() => setClearConfirmVisible(true)}
           style={styles.destructiveRow}

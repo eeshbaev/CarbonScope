@@ -15,6 +15,8 @@ import { colors, radii } from '../theme';
 import { scaleFontSize, scaleSize } from '../theme/scale';
 import type { EvidenceCategory, EvidenceItem } from '../types/enterprise';
 import type { CategoryInput } from '../types/scopeInputs';
+import type { DataQuality } from '../types';
+import { QualityChips } from '../design/QualityChips';
 import {
   resolveCategoryTotal,
   toggleCategoryMonthly,
@@ -50,6 +52,9 @@ interface CategoryInputSectionProps {
   evidence?: CategoryEvidenceProps;
   /** Explicit info text (lines without industry-specific hint packs). */
   infoText?: string;
+  /** Data quality for this line (shown when the line has data). */
+  quality?: DataQuality;
+  onQualityChange?: (q: DataQuality) => void;
 }
 
 function formatReadOnlyTotal(
@@ -74,6 +79,8 @@ export function CategoryInputSection({
   onCategoryChange,
   evidence,
   infoText,
+  quality,
+  onQualityChange,
 }: CategoryInputSectionProps) {
   const { t, locale } = useLanguage();
   const styles = useThemedStyles(createStyles);
@@ -110,6 +117,13 @@ export function CategoryInputSection({
         onPress={() => void evidence.onSlotPress(monthKey)}
         onDelete={evidence.onDelete}
       />
+    ) : null;
+
+  const qualityRow =
+    quality && onQualityChange && resolveCategoryTotal(category) > 0 ? (
+      <View style={styles.qualityRow}>
+        <QualityChips value={quality} onChange={onQualityChange} />
+      </View>
     ) : null;
 
   const handleMonthlyToggle = (enabled: boolean) => {
@@ -181,6 +195,7 @@ export function CategoryInputSection({
           <Text style={styles.totalValue}>{formatReadOnlyTotal(periodTotal, kind, t, locale)}</Text>
           <Text style={styles.totalHint}>{t.scopeInputs.autoFromMonthly}</Text>
         </View>
+        {qualityRow}
 
         <InfoHintModal
           visible={monthInfoKey !== null}
@@ -223,6 +238,7 @@ export function CategoryInputSection({
           showInfo={false}
         />
       </View>
+      {qualityRow}
 
       <InfoHintModal
         visible={infoVisible}
@@ -334,6 +350,9 @@ function createStyles({ typography, spacing, fontScale, displayScale }: ThemeSli
       paddingHorizontal: spacing.sm,
       paddingTop: spacing.sm,
       paddingBottom: spacing.xs,
+    },
+    qualityRow: {
+      marginTop: spacing.sm,
     },
     totalFooter: {
       backgroundColor: colors.primaryMuted,

@@ -20,7 +20,7 @@ import {
   type Scope3CategoryKey,
   type Scope3FieldKey,
 } from './data/scope3Factors';
-import type { Assessment, AssessmentDraft } from './types';
+import { boundaryShare, type Assessment, type AssessmentDraft } from './types';
 import {
   SCOPE2_FIELDS,
   cloneScope1,
@@ -35,6 +35,8 @@ export interface GasBreakdown {
   ch4: number;
   n2o: number;
   hfc: number;
+  /** CH₄ + N₂O from biofuels, published as CO₂e only (not split by gas). */
+  bioNonCo2?: number;
 }
 
 export type Scope1LineKey = Scope1FuelKey | 'refrigerants';
@@ -50,6 +52,8 @@ export interface EmissionsBreakdown {
   scope2Market: number;
   scope2ByLine: Record<Scope2FieldKey, number>;
   scope3: number;
+  /** Biogenic CO₂ from biofuels (tCO₂) — outside the scopes, not in any total. */
+  biogenicCo2: number;
   scope3ByCategory: Record<Scope3CategoryKey, number>;
   scope3ByField: Record<Scope3FieldKey, number>;
   /** Scope 1 + location-based Scope 2 + Scope 3. */
@@ -65,6 +69,8 @@ export interface EmissionsInput {
   countryCode: string;
   /** Override the location grid factor (scenario modelling). */
   gridFactorOverride?: number;
+  /** Equity share approach: fraction of the entity’s emissions reported (default 1). */
+  share?: number;
 }
 
 export function resolveSpendCurrency(
@@ -74,7 +80,32 @@ export function resolveSpendCurrency(
   return scope3.currency ?? currencyForCountry(countryCode);
 }
 
+/** Scale every emissions figure by the reported share (equity share approach). */
+function scaleBreakdown(e: EmissionsBreakdown, k: number): EmissionsBreakdown {
+  if (k === 1) return e;
+  const mul = <T extends Record<string, number | undefined>>(o: T): T =>
+    Object.fromEntries(Object.entries(o).map(([key, v]) => [key, (v ?? 0) * k])) as T;
+  return {
+    ...e,
+    scope1: e.scope1 * k,
+    scope1ByGas: mul(e.scope1ByGas as unknown as Record<string, number>) as unknown as GasBreakdown,
+    scope1ByLine: mul(e.scope1ByLine),
+    scope2Location: e.scope2Location * k,
+    scope2Market: e.scope2Market * k,
+    scope2ByLine: mul(e.scope2ByLine),
+    scope3: e.scope3 * k,
+    biogenicCo2: e.biogenicCo2 * k,
+    scope3ByCategory: mul(e.scope3ByCategory),
+    scope3ByField: mul(e.scope3ByField),
+    total: e.total * k,
+  };
+}
+
 export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
+  return scaleBreakdown(computeEntityEmissions(input), input.share ?? 1);
+}
+
+function computeEntityEmissions(input: EmissionsInput): EmissionsBreakdown {
   const { scope1, scope2, scope3 } = input;
   const countryCode = input.countryCode || 'US';
   const grid =
@@ -83,7 +114,8 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
       : getElectricityFactorForCountry(countryCode);
 
   // ---- Scope 1: combustion (by gas) + refrigerants (HFCs)
-  const gasKg = { co2: 0, ch4: 0, n2o: 0, hfc: 0 };
+  const gasKg = { co2: 0, ch4: 0, n2o: 0, hfc: 0, bioNonCo2: 0 };
+  let biogenicKg = 0;
   const scope1ByLine = { refrigerants: 0 } as Record<Scope1LineKey, number>;
   let wttKg = 0;
   for (const key of SCOPE1_FUELS) {
@@ -92,6 +124,8 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
     gasKg.co2 += qty * f.co2;
     gasKg.ch4 += qty * f.ch4;
     gasKg.n2o += qty * f.n2o;
+    gasKg.bioNonCo2 += qty * (f.nonCo2 ?? 0);
+    biogenicKg += qty * (f.biogenicCo2 ?? 0);
     scope1ByLine[key] = (qty * fuelFactorTotal(key)) / 1000;
     wttKg += qty * f.wtt;
   }
@@ -104,8 +138,10 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
     ch4: gasKg.ch4 / 1000,
     n2o: gasKg.n2o / 1000,
     hfc: gasKg.hfc / 1000,
+    bioNonCo2: gasKg.bioNonCo2 / 1000,
   };
-  const scope1Total = scope1ByGas.co2 + scope1ByGas.ch4 + scope1ByGas.n2o + scope1ByGas.hfc;
+  const scope1Total =
+    scope1ByGas.co2 + scope1ByGas.ch4 + scope1ByGas.n2o + scope1ByGas.hfc + gasKg.bioNonCo2 / 1000;
 
   // ---- Scope 2: location-based
   const elecKwh = resolveCategoryTotal(scope2.electricity);
@@ -173,6 +209,7 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
     scope2Market,
     scope2ByLine,
     scope3: scope3Total,
+    biogenicCo2: biogenicKg / 1000,
     scope3ByCategory,
     scope3ByField,
     total: scope1Total + scope2Location + scope3Total,
@@ -183,7 +220,10 @@ export function computeEmissions(input: EmissionsInput): EmissionsBreakdown {
 
 /** Breakdown for a saved assessment (recomputed from its inputs). */
 export function computeAssessmentEmissions(
-  assessment: Pick<Assessment, 'scope1' | 'scope2' | 'scope3' | 'countryCode' | 'electricityFactor'>
+  assessment: Pick<
+    Assessment,
+    'scope1' | 'scope2' | 'scope3' | 'countryCode' | 'electricityFactor' | 'boundary'
+  >
 ): EmissionsBreakdown {
   return computeEmissions({
     scope1: assessment.scope1,
@@ -191,6 +231,7 @@ export function computeAssessmentEmissions(
     scope3: assessment.scope3,
     countryCode: assessment.countryCode,
     gridFactorOverride: assessment.electricityFactor,
+    share: boundaryShare(assessment.boundary),
   });
 }
 
@@ -224,6 +265,7 @@ export function buildAssessment(
     scope2: draft.scope2,
     scope3: draft.scope3,
     countryCode,
+    share: boundaryShare(draft.boundary),
   });
 
   return {
@@ -242,6 +284,7 @@ export function buildAssessment(
     scope2MarketEmissions: e.scope2Market,
     scope3Emissions: e.scope3,
     scope1ByGas: e.scope1ByGas,
+    biogenicCo2: e.biogenicCo2,
     totalEmissions: e.total,
     electricityFactor: e.gridFactor,
     fuelFactorVersion: FUEL_FACTOR_DATASET.version,
@@ -250,6 +293,9 @@ export function buildAssessment(
     isDraft: !options?.finalize,
     finalizedAt: options?.finalize ? new Date().toISOString() : undefined,
     notes: (draft.notes ?? '').trim(),
+    profile: draft.profile,
+    boundary: draft.boundary,
+    dataQuality: draft.dataQuality,
   };
 }
 
@@ -267,6 +313,9 @@ export function assessmentToDraft(assessment: Assessment): AssessmentDraft {
     scope3: { ...assessment.scope3 },
     notes: assessment.notes ?? '',
     clientTag: assessment.clientTag ?? '',
+    profile: assessment.profile ? { ...assessment.profile } : undefined,
+    boundary: assessment.boundary ? { ...assessment.boundary } : undefined,
+    dataQuality: assessment.dataQuality ? { ...assessment.dataQuality } : undefined,
   };
 }
 

@@ -44,7 +44,9 @@ export interface Assessment {
   /** Market-based Scope 2 (reported alongside the location-based figure). */
   scope2MarketEmissions: number;
   /** Scope 1 split by greenhouse gas at calculation time (tCO₂e). */
-  scope1ByGas?: { co2: number; ch4: number; n2o: number; hfc: number };
+  scope1ByGas?: { co2: number; ch4: number; n2o: number; hfc: number; bioNonCo2?: number };
+  /** Biogenic CO₂ from biofuels (tCO₂), reported outside the scopes. */
+  biogenicCo2?: number;
   /** Scope 1 + location-based Scope 2 + Scope 3. */
   totalEmissions: number;
   /** Location-based grid factor applied (kg CO₂e/kWh). */
@@ -55,6 +57,9 @@ export interface Assessment {
   gridFactorVersion?: string;
   /** Set when a finalized report was recalculated with different factor datasets. */
   restatement?: Restatement;
+  profile?: CompanyProfile;
+  boundary?: Boundary;
+  dataQuality?: Record<string, DataQuality>;
   updatedAt: string;
   /** True when saved via Save progress only (not Calculate Results). */
   isDraft?: boolean;
@@ -79,6 +84,25 @@ export interface Assessment {
   /** @deprecated legacy field */
   region?: string;
 }
+
+/** Optional company size data for intensity metrics (asked when the user opens them). */
+export interface CompanyProfile {
+  employees?: number;
+  /** Revenue for the reporting period, in the report’s spend currency. */
+  revenue?: number;
+  floorAreaM2?: number;
+}
+
+/** GHG Protocol organisational boundary. */
+export type BoundaryApproach = 'operational' | 'financial' | 'equity';
+export interface Boundary {
+  approach: BoundaryApproach;
+  /** Equity share approach: % of this entity’s emissions reported (0–100). */
+  equitySharePct?: number;
+}
+
+/** How the activity data for a line was obtained. */
+export type DataQuality = 'measured' | 'invoice' | 'estimated';
 
 export interface Restatement {
   /** Total before recalculation (tCO₂e). */
@@ -105,6 +129,10 @@ export interface AssessmentDraft {
   scope3: Scope3Inputs;
   notes: string;
   clientTag?: string;
+  profile?: CompanyProfile;
+  boundary?: Boundary;
+  /** Per-line data quality (line key → quality). Missing = default for the line. */
+  dataQuality?: Record<string, DataQuality>;
 }
 
 export const emptyScope1 = emptyScope1V2;
@@ -171,12 +199,16 @@ export function normalizeAssessment(raw: Assessment): Assessment {
         : raw.scope2Emissions ?? 0,
     scope1ByGas:
       raw.scope1ByGas && typeof raw.scope1ByGas === 'object' ? raw.scope1ByGas : undefined,
+    biogenicCo2: typeof raw.biogenicCo2 === 'number' ? raw.biogenicCo2 : undefined,
     fuelFactorVersion:
       typeof raw.fuelFactorVersion === 'string' ? raw.fuelFactorVersion : undefined,
     gridFactorVersion:
       typeof raw.gridFactorVersion === 'string' ? raw.gridFactorVersion : undefined,
     restatement:
       raw.restatement && typeof raw.restatement === 'object' ? raw.restatement : undefined,
+    profile: sanitizeProfile(raw.profile),
+    boundary: sanitizeBoundary(raw.boundary),
+    dataQuality: sanitizeQuality(raw.dataQuality),
     notes: typeof raw.notes === 'string' ? raw.notes : '',
     selectedInitiatives: Array.isArray(raw.selectedInitiatives)
       ? (raw.selectedInitiatives as InitiativeKey[])
@@ -209,4 +241,43 @@ export function normalizeAssessment(raw: Assessment): Assessment {
     isDraft: raw.isDraft === true,
     finalizedAt: typeof raw.finalizedAt === 'string' ? raw.finalizedAt : undefined,
   };
+}
+
+function positiveOrUndefined(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : undefined;
+}
+
+export function sanitizeProfile(raw: unknown): CompanyProfile | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const p = raw as CompanyProfile;
+  const out: CompanyProfile = {
+    employees: positiveOrUndefined(p.employees),
+    revenue: positiveOrUndefined(p.revenue),
+    floorAreaM2: positiveOrUndefined(p.floorAreaM2),
+  };
+  return out.employees || out.revenue || out.floorAreaM2 ? out : undefined;
+}
+
+export function sanitizeBoundary(raw: unknown): Boundary | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const b = raw as Boundary;
+  if (b.approach !== 'operational' && b.approach !== 'financial' && b.approach !== 'equity') return undefined;
+  if (b.approach !== 'equity') return { approach: b.approach };
+  const pct = typeof b.equitySharePct === 'number' ? Math.min(Math.max(b.equitySharePct, 0), 100) : 100;
+  return { approach: 'equity', equitySharePct: pct };
+}
+
+function sanitizeQuality(raw: unknown): Record<string, DataQuality> | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const out: Record<string, DataQuality> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (v === 'measured' || v === 'invoice' || v === 'estimated') out[k] = v;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+/** Share of the entity’s emissions included in the report (equity share approach), 0–1. */
+export function boundaryShare(boundary: Boundary | undefined): number {
+  if (!boundary || boundary.approach !== 'equity') return 1;
+  return Math.min(Math.max((boundary.equitySharePct ?? 100) / 100, 0), 1);
 }

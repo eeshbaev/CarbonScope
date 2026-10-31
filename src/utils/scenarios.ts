@@ -1,7 +1,7 @@
 import { computeEmissions } from '../calculations';
 import { HEAT_FACTORS } from '../data/fuelFactors';
 import { resolveCategoryTotal } from './scopeFieldInputs';
-import type { Assessment } from '../types';
+import { boundaryShare, type Assessment } from '../types';
 
 export type ScenarioAdjustments = {
   electricityPct: number;
@@ -98,6 +98,7 @@ export function computeScenarioTotals(
       adj.customGridFactor != null && adj.customGridFactor > 0
         ? adj.customGridFactor
         : assessment.electricityFactor,
+    share: boundaryShare(assessment.boundary),
   });
   return { scope1: e.scope1, scope2: e.scope2Location, scope3: e.scope3, total: e.total };
 }

@@ -24,7 +24,20 @@ export const FUEL_FACTOR_DATASET = {
 } as const;
 
 /** Scope 1 combustion fuels (stationary and mobile). */
-export type Scope1FuelKey = 'diesel' | 'petrol' | 'naturalGas' | 'lpg' | 'heatingOil' | 'coal';
+export type Scope1FuelKey =
+  | 'diesel'
+  | 'petrol'
+  | 'naturalGas'
+  | 'lpg'
+  | 'heatingOil'
+  | 'coal'
+  | 'biodiesel'
+  | 'bioethanol'
+  | 'biomethane'
+  | 'woodPellets';
+
+/** Biofuels: their combustion CO₂ is biogenic and reported outside the scopes. */
+export const BIOFUELS: Scope1FuelKey[] = ['biodiesel', 'bioethanol', 'biomethane', 'woodPellets'];
 
 /** Standard (stored) unit for each fuel. */
 export type FuelStandardUnit = 'liters' | 'kwh' | 'kg';
@@ -42,6 +55,13 @@ export interface FuelFactor extends GasSplit {
   unit: FuelStandardUnit;
   /** Well-to-tank (upstream extraction, refining, transport) kg CO₂e per unit — Scope 3 Cat. 3. */
   wtt: number;
+  /**
+   * CH₄ + N₂O published as CO₂e only (DESNZ bioenergy rows are not split by gas; AR5 basis).
+   * Counted in Scope 1.
+   */
+  nonCo2?: number;
+  /** Biogenic CO₂ (kg per unit) — reported outside the scopes, never added to totals. */
+  biogenicCo2?: number;
 }
 
 export const SCOPE1_FUELS: Scope1FuelKey[] = [
@@ -51,6 +71,10 @@ export const SCOPE1_FUELS: Scope1FuelKey[] = [
   'lpg',
   'heatingOil',
   'coal',
+  'biodiesel',
+  'bioethanol',
+  'biomethane',
+  'woodPellets',
 ];
 
 export const FUEL_FACTORS: Record<Scope1FuelKey, FuelFactor> = {
@@ -66,11 +90,19 @@ export const FUEL_FACTORS: Record<Scope1FuelKey, FuelFactor> = {
   heatingOil: { unit: 'liters', co2: 2.52782, ch4: 0.00717, n2o: 0.00576, wtt: 0.53078 },
   // Fuels › Solid fuels › Coal (industrial) › tonnes ÷ 1000
   coal: { unit: 'kg', co2: 2.39047, ch4: 0.00813, n2o: 0.01744, wtt: 0.41815 },
+  // Bioenergy › Biofuel › Biodiesel ME › litres (in-scope CH₄ + N₂O; biogenic CO₂ outside scopes)
+  biodiesel: { unit: 'liters', co2: 0, ch4: 0, n2o: 0, nonCo2: 0.16751, biogenicCo2: 2.39, wtt: 0.39508 },
+  // Bioenergy › Biofuel › Bioethanol › litres
+  bioethanol: { unit: 'liters', co2: 0, ch4: 0, n2o: 0, nonCo2: 0.00901, biogenicCo2: 1.52, wtt: 0.61516 },
+  // Bioenergy › Biofuel › Biomethane (compressed) › kg
+  biomethane: { unit: 'kg', co2: 0, ch4: 0, n2o: 0, nonCo2: 0.00521, biogenicCo2: 2.71, wtt: 0.77405 },
+  // Bioenergy › Biomass › Wood pellets › tonnes ÷ 1000
+  woodPellets: { unit: 'kg', co2: 0, ch4: 0, n2o: 0, nonCo2: 0.05725, biogenicCo2: 1.67718, wtt: 0.177 },
 };
 
 export function fuelFactorTotal(key: Scope1FuelKey): number {
   const f = FUEL_FACTORS[key];
-  return Math.round((f.co2 + f.ch4 + f.n2o) * 100000) / 100000;
+  return Math.round((f.co2 + f.ch4 + f.n2o + (f.nonCo2 ?? 0)) * 100000) / 100000;
 }
 
 /**

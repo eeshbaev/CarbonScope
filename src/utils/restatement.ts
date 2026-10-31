@@ -1,5 +1,5 @@
 import { computeEmissions, factorStamp } from '../calculations';
-import type { Assessment, Restatement } from '../types';
+import { boundaryShare, type Assessment, type Restatement } from '../types';
 
 /**
  * When a finalized report is rebuilt with different factor datasets, record the previous result
@@ -14,6 +14,7 @@ export function buildRestatement(existing: Assessment, built: Assessment): Resta
     scope2: existing.scope2,
     scope3: existing.scope3,
     countryCode: existing.countryCode,
+    share: boundaryShare(existing.boundary),
   }).total;
   return {
     previousTotal: existing.totalEmissions,

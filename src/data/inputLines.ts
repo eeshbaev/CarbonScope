@@ -24,6 +24,10 @@ export const CATEGORY_LINES: CategoryLineDef[] = [
   { key: 'lpg', scope: 1, kind: 'fuel', evidence: 'lpg' },
   { key: 'heatingOil', scope: 1, kind: 'fuel', evidence: 'heatingOil' },
   { key: 'coal', scope: 1, kind: 'mass', evidence: 'coal' },
+  { key: 'biodiesel', scope: 1, kind: 'fuel', evidence: 'biodiesel' },
+  { key: 'bioethanol', scope: 1, kind: 'fuel', evidence: 'bioethanol' },
+  { key: 'biomethane', scope: 1, kind: 'mass', evidence: 'biomethane' },
+  { key: 'woodPellets', scope: 1, kind: 'mass', evidence: 'woodPellets' },
   {
     key: 'electricity',
     scope: 2,

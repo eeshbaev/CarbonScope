@@ -108,12 +108,12 @@ export function buildGasRows(
   if (!assessment.scope1ByGas) return [];
   void breakdown;
   const gases = assessment.scope1ByGas;
-  return (['co2', 'ch4', 'n2o', 'hfc'] as const)
-    .filter((g) => gases[g] > 0 || g === 'co2')
+  return (['co2', 'ch4', 'n2o', 'hfc', 'bioNonCo2'] as const)
+    .filter((g) => (gases[g] ?? 0) > 0 || g === 'co2')
     .map((g) => ({
       key: g,
       label: t.results.gases[g],
-      value: `${formatEmissions(gases[g])} ${tco2eLabel}`,
+      value: `${formatEmissions(gases[g] ?? 0)} ${tco2eLabel}`,
     }));
 }
 
@@ -168,7 +168,11 @@ export function buildMethodologyRows(
       .map((k) => {
         const f = FUEL_FACTORS[k];
         const unit = standardUnitAbbr(t, CATEGORY_LINES.find((l) => l.key === k)!.kind);
-        return `${lineLabel(t, k)} ${formatAppNumber(fuelFactorTotal(k), locale)} ${kg}/${unit} (CO₂ ${f.co2}, CH₄ ${f.ch4}, N₂O ${f.n2o})`;
+        const split =
+          f.nonCo2 != null
+            ? `CH₄+N₂O ${f.nonCo2}; biogenic CO₂ ${f.biogenicCo2} outside scopes`
+            : `CO₂ ${f.co2}, CH₄ ${f.ch4}, N₂O ${f.n2o}`;
+        return `${lineLabel(t, k)} ${formatAppNumber(fuelFactorTotal(k), locale)} ${kg}/${unit} (${split})`;
       })
       .join('; '),
   });

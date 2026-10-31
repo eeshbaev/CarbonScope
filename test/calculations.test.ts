@@ -18,7 +18,7 @@ const near = (a: number, b: number, eps = 1e-6) =>
 
 test('gas split sums to the published total for every fuel', () => {
   for (const [key, f] of Object.entries(FUEL_FACTORS)) {
-    near(f.co2 + f.ch4 + f.n2o, fuelFactorTotal(key as keyof typeof FUEL_FACTORS), 1e-5);
+    near(f.co2 + f.ch4 + f.n2o + (f.nonCo2 ?? 0), fuelFactorTotal(key as keyof typeof FUEL_FACTORS), 1e-5);
   }
 });
 
@@ -110,4 +110,33 @@ test('number parsing accepts decimal commas and thousands separators', () => {
   assert.equal(parseNumberInput('1,000'), 1000);
   assert.equal(parseNumberInput('1.234,5'), 1234.5);
   assert.equal(parseNumberInput('-3'), 0);
+});
+
+test('biofuels: only CH₄+N₂O in Scope 1, biogenic CO₂ reported separately', () => {
+  const e = computeEmissions({
+    scope1: migrateScope1Inputs({ biodiesel: { total: 1000 }, woodPellets: { total: 2000 } }),
+    scope2: migrateScope2Inputs({}),
+    scope3: migrateScope3Inputs({}),
+    countryCode: 'GB',
+  });
+  near(e.scope1, (1000 * 0.16751 + 2000 * 0.05725) / 1000);
+  near(e.biogenicCo2, (1000 * 2.39 + 2000 * 1.67718) / 1000);
+  near(e.total, e.scope1);
+  near(e.scope1ByGas.co2, 0);
+});
+
+test('equity share scales every figure; operational control does not', async () => {
+  const { boundaryShare } = await import('../src/types');
+  const base = {
+    scope1: migrateScope1Inputs({ diesel: { total: 1000 } }),
+    scope2: migrateScope2Inputs({ electricity: { total: 10000 } }),
+    scope3: migrateScope3Inputs({ railKm: 1000 }),
+    countryCode: 'GB',
+  };
+  const full = computeEmissions(base);
+  const half = computeEmissions({ ...base, share: boundaryShare({ approach: 'equity', equitySharePct: 50 }) });
+  near(half.total, full.total / 2);
+  near(half.scope2Market, full.scope2Market / 2);
+  near(half.scope1ByGas.co2, full.scope1ByGas.co2 / 2);
+  assert.equal(boundaryShare({ approach: 'operational' }), 1);
 });

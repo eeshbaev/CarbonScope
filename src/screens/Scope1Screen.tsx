@@ -23,6 +23,7 @@ import { getReportingMonthsForDraft, resolveCategoryTotal } from '../utils/scope
 import { CATEGORY_LINES, getLineInput, setLineInput, type CategoryLineKey } from '../data/inputLines';
 import { REFRIGERANTS } from '../data/fuelFactors';
 import type { EvidenceCategory } from '../types/enterprise';
+import { qualityOf } from '../utils/reportMetrics';
 import { lineFactorHint, lineInfoText, lineLabel } from '../utils/lineLabels';
 import { formatAppNumber } from '../utils/appLocale';
 import { CategoryLabel } from '../components/CategoryLabel';
@@ -110,6 +111,12 @@ export function Scope1Screen({ navigation }: Props) {
               <Text style={styles.sectionHint}>{t.scope1.otherFuelsHint}</Text>
             </View>
           ) : null}
+          {l.key === 'biodiesel' ? (
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t.scope1.biofuelsTitle}</Text>
+              <Text style={styles.sectionHint}>{t.scope1.biofuelsHint}</Text>
+            </View>
+          ) : null}
           <CategoryInputSection
             categoryKey={l.key}
             label={lineLabel(t, l.key)}
@@ -122,6 +129,10 @@ export function Scope1Screen({ navigation }: Props) {
             months={months}
             monthlyEnabled={monthlyEnabled}
             onCategoryChange={(next) => updateDraft(setLineInput(draft, l.key, next))}
+            quality={qualityOf(draft, l.key)}
+            onQualityChange={(q) =>
+              updateDraft({ dataQuality: { ...(draft.dataQuality ?? {}), [l.key]: q } })
+            }
             evidence={evidenceFor(l.evidence)}
           />
         </View>
